@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vehicle Details - DriveSphere</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="http://localhost/drivesphere_updated/css/portal.css">
+</head>
+<body class="portal">
+<header class="p-nav">
+  <div class="p-wrap">
+    <a class="p-brand" href="http://localhost/drivesphere_updated/customer/dashboard.php">
+      <span class="p-brand-logo">
+        <img src="http://localhost/drivesphere_updated/images/DriveSphere_logo.jpg" alt="DriveSphere Logo">
+      </span>
+      <span class="p-brand-text">
+        <b>DriveSphere</b>
+        <small>CUSTOMER RENTAL</small>
+      </span>
+    </a>
+
+    <button class="p-burger" id="burger" aria-label="Menu" type="button"><i class="fa-solid fa-bars"></i></button>
+
+    <nav class="p-links" id="navLinks">
+      <a href="http://localhost/drivesphere_updated/customer/dashboard.php" class="">Dashboard</a>
+      <a href="http://localhost/drivesphere_updated/customer/browse.php" class="active">Browse</a>
+      <a href="http://localhost/drivesphere_updated/customer/about.php" class="">About</a>
+      <a href="http://localhost/drivesphere_updated/customer/help.php" class="">Help</a>
+    </nav>
+
+    <div class="p-acc">
+      <button class="p-acc-btn" id="accBtn" type="button" aria-expanded="false" aria-label="Customer Account Menu">
+        <span>Account</span>
+        <span class="av">
+          <svg viewBox="0 0 32 32" fill="none" style="width:100%;height:100%;display:block;">
+            <circle cx="16" cy="16" r="16" fill="#0284c7"/>
+            <circle cx="16" cy="12" r="5.5" fill="#ffffff"/>
+            <path d="M6 28c0-5.523 4.477-10 10-10s10 4.477 10 10" fill="#ffffff"/>
+          </svg>
+        </span>
+        <i class="fa-solid fa-chevron-down p-chevron" id="accChevron"></i>
+      </button>
+
+      <div class="p-menu" id="accMenu">
+        <div class="who">
+          <div class="who-avatar">
+            <svg viewBox="0 0 40 40" fill="none" style="width:100%;height:100%;display:block;border-radius:50%;">
+              <circle cx="20" cy="20" r="20" fill="#e0f2fe"/>
+              <circle cx="20" cy="15" r="7" fill="#0284c7"/>
+              <path d="M7 36c0-7.18 5.82-13 13-13s13 5.82 13 13" fill="#0284c7"/>
+            </svg>
+          </div>
+          <div class="who-info">
+            <b>Eduardo Jose Reyes</b>
+            <span>eduardo@drivesphere.ph</span>
+          </div>
+        </div>
+
+        <div class="p-menu-list">
+          <a href="http://localhost/drivesphere_updated/customer/settings.php" class="p-item">
+            <span class="p-item-left"><i class="fa-solid fa-gear"></i> Settings</span>
+          </a>
+          <a href="http://localhost/drivesphere_updated/customer/notifications.php" class="p-item">
+            <span class="p-item-left"><i class="fa-regular fa-bell"></i> Notifications</span>
+            <span class="p-toggle-pill has-badge">
+              <span class="p-toggle-knob"></span>
+            </span>
+          </a>
+          <a href="http://localhost/drivesphere_updated/customer/history.php" class="p-item">
+            <span class="p-item-left"><i class="fa-solid fa-clock-rotate-left"></i> My Rental History</span>
+          </a>
+        </div>
+
+        <div class="p-menu-divider"></div>
+
+        <a class="out p-item" href="http://localhost/drivesphere_updated/actions/logout.php">
+          <span class="p-item-left"><i class="fa-solid fa-arrow-right-from-bracket"></i> Log Out</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+<main class="p-main">
+<div class="p-wrap">
+
+<div class="v-details-container">
+    <!-- Top Action Bar -->
+    <div class="v-top-bar">
+        <a href="http://localhost/drivesphere_updated/customer/dashboard.php" class="back-link">
+            <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+        </a>
+        <div class="v-top-actions">
+            <button type="button" class="btn-v-action" id="wishlistBtn" onclick="this.classList.toggle('active'); this.querySelector('span').innerText = this.classList.contains('active') ? 'Saved to Wishlist' : 'Save to Wishlist';">
+                <i class="fa-regular fa-bookmark"></i> <span>Save to Wishlist</span>
+            </button>
+            <button type="button" class="btn-v-action" id="shareBtn" onclick="navigator.clipboard.writeText(window.location.href); alert('Link copied to clipboard!');">
+                <i class="fa-solid fa-share-nodes"></i> Share
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Split Layout -->
+    <div class="v-main-split">
+        <!-- Left Column: Details, Visuals, Overview, Features -->
+        <div class="v-left-col">
+            <!-- Header Block -->
+            <div class="v-header-block">
+                <div class="v-category-fleet">
+                    7-SEATER PREMIUM SUV &bull; Fleet ID: MNL-FT-001                </div>
+                <div class="v-title-row">
+                    <h1 class="v-main-title">Toyota Fortuner LTD 2.8L</h1>
+                    <span class="v-status-pill">
+                        <span class="dot"></span> Available for Rent
+                    </span>
+                </div>
+            </div>
+
+            <!-- Big Visual Card -->
+            <div class="v-visual-card">
+                <img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&amp;fit=crop&amp;q=80&amp;w=800" alt="Toyota Fortuner LTD 2.8L" class="v-visual-img">
+                <span class="v-chip-left">
+                    <i class="fa-solid fa-shield-halved"></i> Fully Inspected &amp; Sanitized
+                </span>
+                <span class="v-chip-right">
+                    <i class="fa-solid fa-camera"></i> Exterior &amp; Cockpit (360&deg;)
+                </span>
+            </div>
+
+            <!-- 4 Key Spec Badges -->
+            <div class="v-key-specs-grid">
+                <div class="key-spec-box">
+                    <div class="key-spec-icon"><i class="fa-solid fa-user-group"></i></div>
+                    <div class="key-spec-text">
+                        <span class="key-spec-lbl">PASSENGER</span>
+                        <span class="key-spec-val">7 Seats</span>
+                    </div>
+                </div>
+                <div class="key-spec-box">
+                    <div class="key-spec-icon"><i class="fa-solid fa-door-closed"></i></div>
+                    <div class="key-spec-text">
+                        <span class="key-spec-lbl">DOORS</span>
+                        <span class="key-spec-val">5 Doors</span>
+                    </div>
+                </div>
+                <div class="key-spec-box">
+                    <div class="key-spec-icon"><i class="fa-solid fa-gauge-high"></i></div>
+                    <div class="key-spec-text">
+                        <span class="key-spec-lbl">CONSUMPTION</span>
+                        <span class="key-spec-val">12.5 km/L</span>
+                    </div>
+                </div>
+                <div class="key-spec-box">
+                    <div class="key-spec-icon"><i class="fa-solid fa-dharmachakra"></i></div>
+                    <div class="key-spec-text">
+                        <span class="key-spec-lbl">TRANSMISSION</span>
+                        <span class="key-spec-val">Automatic</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Vehicle Overview -->
+            <div class="v-section-head">
+                <h2 class="v-section-title">Vehicle Overview</h2>
+                <span class="v-section-sub">MY2024 LTD Grade</span>
+            </div>
+            <div class="v-overview-grid">
+                <div class="v-overview-item">
+                    <i class="fa-solid fa-palette v-overview-icon"></i>
+                    <div class="v-overview-content">
+                        <span class="v-overview-lbl">EXTERIOR COLOR</span>
+                        <span class="v-overview-val">Platinum White Pearl</span>
+                    </div>
+                </div>
+                <div class="v-overview-item">
+                    <i class="fa-solid fa-couch v-overview-icon"></i>
+                    <div class="v-overview-content">
+                        <span class="v-overview-lbl">INTERIOR COLOR</span>
+                        <span class="v-overview-val">Dual-Tone Black &amp; Maroon Leather</span>
+                    </div>
+                </div>
+                <div class="v-overview-item">
+                    <i class="fa-solid fa-gauge-high v-overview-icon"></i>
+                    <div class="v-overview-content">
+                        <span class="v-overview-lbl">TRANSMISSION</span>
+                        <span class="v-overview-val">Automatic (6-Speed) with Paddle Shifters</span>
+                    </div>
+                </div>
+                <div class="v-overview-item">
+                    <i class="fa-solid fa-gears v-overview-icon"></i>
+                    <div class="v-overview-content">
+                        <span class="v-overview-lbl">ENGINE CAPACITY</span>
+                        <span class="v-overview-val">2.8L Diesel Turbo</span>
+                    </div>
+                </div>
+                <div class="v-overview-item">
+                    <i class="fa-solid fa-gas-pump v-overview-icon"></i>
+                    <div class="v-overview-content">
+                        <span class="v-overview-lbl">FUEL TYPE</span>
+                        <span class="v-overview-val">Euro 4 Clean Diesel (80L Tank)</span>
+                    </div>
+                </div>
+                <div class="v-overview-item">
+                    <i class="fa-solid fa-location-arrow v-overview-icon"></i>
+                    <div class="v-overview-content">
+                        <span class="v-overview-lbl">GPS NAVIGATION</span>
+                        <span class="v-overview-val">Built-in Apple CarPlay &amp; Android Auto GPS</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Description -->
+            <div class="v-section-head">
+                <h2 class="v-section-title">Description</h2>
+            </div>
+            <div class="v-desc-body">
+                <p>Top-tier performance with premium leather captain seats and JBL audio system.</p>
+                <p>Equipped with full safety sensors, adaptive drive controls, and advanced connectivity. Whether navigating metropolitan Manila corridors or winding ascent routes up to Baguio and Tagaytay, this self-drive vehicle delivers absolute confidence and spacious comfort.</p>
+            </div>
+
+            <!-- Section: Other Features -->
+            <div class="v-section-head">
+                <h2 class="v-section-title">Other Features</h2>
+            </div>
+            <div class="v-features-grid">
+                <div class="v-feature-card">
+                    <div class="v-feature-icon-box"><i class="fa-solid fa-chair"></i></div>
+                    <h3 class="v-feature-title">Leather Executive Seating</h3>
+                    <p class="v-feature-desc">Ventilated perforated leather driver and co-pilot seating with 8-way power adjustment.</p>
+                </div>
+                <div class="v-feature-card">
+                    <div class="v-feature-icon-box"><i class="fa-solid fa-volume-high"></i></div>
+                    <h3 class="v-feature-title">Surround Sound Audio</h3>
+                    <p class="v-feature-desc">9-speaker JBL Premium Acoustic System with high-fidelity subwoofer for long road trips.</p>
+                </div>
+                <div class="v-feature-card">
+                    <div class="v-feature-icon-box"><i class="fa-solid fa-mountain"></i></div>
+                    <h3 class="v-feature-title">All-Terrain 4WD Drive Modes</h3>
+                    <p class="v-feature-desc">Dial-switch 2H, 4H, and 4L drivetrain with Auto Limited-Slip Differential and Downhill Assist.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Sticky Booking Widget Sidebar -->
+        <div class="v-right-col">
+            <div class="booking-widget">
+                <!-- Daily Rental Rate Header -->
+                <div class="widget-price-header">
+                    <div class="w-price-left">
+                        <span class="w-price-lbl">DAILY RENTAL RATE</span>
+                        <div>
+                            <span class="w-price-amount">₱4,200</span>
+                            <span class="w-price-period">/ day</span>
+                        </div>
+                    </div>
+                    <div class="w-price-right">
+                        <span class="w-tier-badge">Standard Tier</span>
+                        <span class="w-tax-lbl">Taxes Included</span>
+                    </div>
+                </div>
+
+                <form method="get" action="http://localhost/drivesphere_updated/customer/request.php" id="bookingForm">
+                    <input type="hidden" name="vehicle_id" value="1">
+
+                    <!-- Pick-up Location Box -->
+                    <div class="w-location-box">
+                        <label class="w-input-lbl">Pick-up Location</label>
+                        <div class="w-location-input-wrap">
+                            <i class="fa-solid fa-location-dot" style="color: #0284c7;"></i>
+                            <span>Ninoy Aquino Int'l Airport (T3)</span>
+                        </div>
+                        <input type="hidden" name="pickup_location" value="Ninoy Aquino Int'l Airport (T3)">
+                    </div>
+
+                    <!-- Pick-up & Return Date Boxes -->
+                    <div class="w-dates-row">
+                        <div class="w-date-box">
+                            <span class="w-input-lbl" style="margin:0;"><i class="fa-regular fa-calendar"></i> Pick-up Date</span>
+                            <input type="date" name="pickup_date" id="pickupDateInput" value="2026-10-22" required>
+                        </div>
+                        <div class="w-date-box">
+                            <span class="w-input-lbl" style="margin:0;"><i class="fa-regular fa-calendar"></i> Return Date</span>
+                            <input type="date" name="return_date" id="returnDateInput" value="2026-10-25" required>
+                        </div>
+                    </div>
+
+                    <!-- Price Breakdown List -->
+                    <div class="w-breakdown-list">
+                        <div class="w-breakdown-item">
+                            <span id="rateCalculationLabel">₱4,200 &times; 3 Days</span>
+                            <b id="rateSubtotalVal">₱12,600</b>
+                        </div>
+                        <div class="w-breakdown-item">
+                            <span>Comprehensive Insurance</span>
+                            <span class="included">Included</span>
+                        </div>
+                        <div class="w-breakdown-item">
+                            <span>Refundable Security Deposit</span>
+                            <b>₱5,000</b>
+                        </div>
+                    </div>
+
+                    <div class="w-divider"></div>
+
+                    <!-- Estimated Total -->
+                    <div class="w-total-row">
+                        <span class="w-total-lbl">Estimated Total</span>
+                        <b class="w-total-val" id="estimatedTotalVal">₱12,600</b>
+                    </div>
+
+                    <!-- Proceed CTA Button -->
+                    <button type="submit" class="btn-proceed-reserve">
+                        Proceed to Price Overview &amp; Reservation &rarr;
+                    </button>
+                </form>
+
+                <!-- Trust Guarantee List -->
+                <div class="w-trust-list">
+                    <div class="w-trust-item">
+                        <i class="fa-regular fa-circle-check" style="color: #22c55e;"></i>
+                        <span><strong>Free Cancellation</strong> up to 24 hours before pickup time.</span>
+                    </div>
+                    <div class="w-trust-item">
+                        <i class="fa-solid fa-headset" style="color: #0284c7;"></i>
+                        <span>24/7 Roadside Assistance &amp; Fleet Hotline: <strong>(02) 8888-DRIVE</strong></span>
+                    </div>
+                    <div class="w-trust-item">
+                        <i class="fa-solid fa-shield-halved" style="color: #0284c7;"></i>
+                        <span>Full LTFRB &amp; Comprehensive Commercial Insurance coverage provided.</span>
+                    </div>
+                </div>
+
+                <!-- DriveSphere Direct Box -->
+                <div class="direct-unit-card">
+                    <div class="direct-unit-icon">
+                        <img src="http://localhost/drivesphere_updated/images/DriveSphere_logo.jpg" alt="DriveSphere Logo">
+                    </div>
+                    <div>
+                        <div class="direct-unit-title">DRIVESPHERE DIRECT</div>
+                        <p class="direct-unit-desc">Official fleet unit. No middleman broker markups.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Interactive Date & Price Calculation Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const pickupInput = document.getElementById('pickupDateInput');
+    const returnInput = document.getElementById('returnDateInput');
+    const rateCalcLabel = document.getElementById('rateCalculationLabel');
+    const rateSubtotal = document.getElementById('rateSubtotalVal');
+    const estimatedTotal = document.getElementById('estimatedTotalVal');
+    const dailyRate = 4200;
+
+    function updatePrice() {
+        if (!pickupInput || !returnInput) return;
+        const pDate = new Date(pickupInput.value);
+        const rDate = new Date(returnInput.value);
+
+        if (isNaN(pDate) || isNaN(rDate)) return;
+
+        const diffTime = rDate - pDate;
+        let days = Math.round(diffTime / (1000 * 60 * 60 * 24));
+        if (days < 1) days = 1;
+
+        const subtotal = days * dailyRate;
+
+        rateCalcLabel.innerHTML = '₱' + dailyRate.toLocaleString() + ' &times; ' + days + ' Day' + (days > 1 ? 's' : '');
+        rateSubtotal.innerText = '₱' + subtotal.toLocaleString();
+        estimatedTotal.innerText = '₱' + subtotal.toLocaleString();
+    }
+
+    if (pickupInput && returnInput) {
+        pickupInput.addEventListener('change', function() {
+            if (new Date(returnInput.value) <= new Date(pickupInput.value)) {
+                const nextDay = new Date(pickupInput.value);
+                nextDay.setDate(nextDay.getDate() + 3);
+                returnInput.value = nextDay.toISOString().split('T')[0];
+            }
+            updatePrice();
+        });
+        returnInput.addEventListener('change', updatePrice);
+    }
+});
+</script>
+
+</div><!-- /.p-wrap -->
+</main>
+
+<footer class="p-foot">
+  <div class="p-wrap">
+    <div class="p-foot-grid">
+      <!-- Left: Logo & Tagline -->
+      <div class="p-foot-brand">
+        <a href="http://localhost/drivesphere_updated/index.php" class="p-foot-logo">
+          <span class="p-foot-logo-box">
+            <img src="http://localhost/drivesphere_updated/images/DriveSphere_logo.jpg" alt="DriveSphere Logo">
+          </span>
+          <span class="p-foot-logo-text">DriveSphere</span>
+        </a>
+        <p class="p-foot-desc">Your Premier Philippine Vehicle Rental &amp; Smart Fleet Management Platform</p>
+      </div>
+
+      <!-- Links 1: About Us -->
+      <div class="p-foot-col">
+        <h4>ABOUT US</h4>
+        <a href="http://localhost/drivesphere_updated/customer/about.php">Our Story</a>
+        <a href="http://localhost/drivesphere_updated/customer/about.php">Fleet Network</a>
+        <a href="http://localhost/drivesphere_updated/customer/about.php">Careers</a>
+        <a href="http://localhost/drivesphere_updated/customer/about.php">Press</a>
+      </div>
+
+      <!-- Links 2: Legal & Compliance -->
+      <div class="p-foot-col">
+        <h4>LEGAL &amp; COMPLIANCE</h4>
+        <a href="http://localhost/drivesphere_updated/policies.php">Terms of Service</a>
+        <a href="http://localhost/drivesphere_updated/policies.php">Privacy Policy</a>
+      </div>
+
+      <!-- Links 3: Get Help -->
+      <div class="p-foot-col">
+        <h4>GET HELP</h4>
+        <a href="http://localhost/drivesphere_updated/customer/help.php">FAQs</a>
+        <a href="http://localhost/drivesphere_updated/customer/help.php">24/7 Roadside Assistance</a>
+        <a href="http://localhost/drivesphere_updated/customer/help.php">Booking Support</a>
+      </div>
+    </div>
+
+    <!-- Contact Details Bar -->
+    <div class="p-foot-contact-bar">
+      <div class="p-contact-item">
+        <i class="fa-solid fa-phone"></i>
+        <span>24/7 Hotline: <strong>(02) 8888-DRIVE</strong></span>
+      </div>
+      <div class="p-contact-item">
+        <i class="fa-regular fa-envelope"></i>
+        <span>support@drivesphere.ph</span>
+      </div>
+      <div class="p-contact-item">
+        <i class="fa-solid fa-location-dot"></i>
+        <span>BGC, Taguig City, Philippines</span>
+      </div>
+    </div>
+
+    <!-- Bottom Copyright -->
+    <div class="p-foot-bot">
+      <span>&copy; 2026 DriveSphere Philippines Inc. All rights reserved.</span>
+    </div>
+  </div>
+</footer>
+
+<div class="modal-backdrop" id="filterModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="filterModalTitle">
+  <div class="filter-dialog">
+    <div class="filter-modal-head">
+      <h3 class="filter-modal-title" id="filterModalTitle">
+        <i class="fa-solid fa-sliders"></i> Filter
+      </h3>
+      <button class="filter-close-x" id="closeFilterModal" type="button" aria-label="Close Filter">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <form method="get" action="http://localhost/drivesphere_updated/customer/browse.php" id="filterModalForm">
+      <div class="filter-modal-body">
+        <!-- 1. Vehicle Type -->
+        <div>
+          <label class="filter-group-lbl">Vehicle Type</label>
+          <div class="pill-options-grid" id="typePills">
+            <button type="button" class="filter-pill active-blue" data-type="all">All</button>
+            <button type="button" class="filter-pill" data-type="sedan">Sedan</button>
+            <button type="button" class="filter-pill" data-type="suv">SUV</button>
+            <button type="button" class="filter-pill" data-type="van">MPV / Van</button>
+            <button type="button" class="filter-pill" data-type="crossover">Crossover</button>
+            <button type="button" class="filter-pill" data-type="pickup">Pickup</button>
+          </div>
+          <input type="hidden" name="type" id="filterTypeInput" value="all">
+        </div>
+
+        <!-- 2. Transmission -->
+        <div>
+          <label class="filter-group-lbl">Transmission</label>
+          <div class="pill-options-grid" id="transPills" style="grid-template-columns: repeat(3, 1fr);">
+            <button type="button" class="filter-pill active-navy" data-trans="all">All</button>
+            <button type="button" class="filter-pill" data-trans="Automatic">Automatic</button>
+            <button type="button" class="filter-pill" data-trans="Manual">Manual</button>
+          </div>
+          <input type="hidden" name="transmission" id="filterTransInput" value="all">
+        </div>
+
+        <!-- 3. Price Range -->
+        <div>
+          <div class="filter-group-lbl">
+            <span>Price Range</span>
+            <small>Per Day (PHP)</small>
+          </div>
+          <div class="price-inputs-row">
+            <div class="price-input-box">
+              <span class="price-box-lbl">Min Price</span>
+              <select name="min_price" id="filterMinPrice">
+                <option value="1000">₱ 1,000</option>
+                <option value="1500" selected>₱ 1,500</option>
+                <option value="2000">₱ 2,000</option>
+                <option value="3000">₱ 3,000</option>
+                <option value="4000">₱ 4,000</option>
+              </select>
+            </div>
+            <div class="price-input-box">
+              <span class="price-box-lbl">Max Price</span>
+              <select name="max_price" id="filterMaxPrice">
+                <option value="3500">₱ 3,500</option>
+                <option value="5000">₱ 5,000</option>
+                <option value="6000" selected>₱ 6,000</option>
+                <option value="8000">₱ 8,000</option>
+                <option value="10000">₱ 10,000+</option>
+              </select>
+            </div>
+          </div>
+          <div class="range-slider-wrap">
+            <div class="range-bar-track">
+              <div class="range-bar-fill" id="sliderFill"></div>
+            </div>
+            <div class="range-endpoints">
+              <span>₱1,000</span>
+              <span>₱3,500</span>
+              <span>₱10,000+</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Brand -->
+        <div>
+          <label class="filter-group-lbl">Brand</label>
+          <div class="brand-select-box">
+            <select name="brand" id="filterBrand">
+              <option value="all">All Brands (Toyota, Honda, Mitsubishi, Ford...)</option>
+              <option value="Toyota">Toyota</option>
+              <option value="Honda">Honda</option>
+              <option value="Mitsubishi">Mitsubishi</option>
+              <option value="Ford">Ford</option>
+              <option value="Mazda">Mazda</option>
+              <option value="Hyundai">Hyundai</option>
+            </select>
+            <i class="fa-solid fa-chevron-down select-chevron"></i>
+          </div>
+        </div>
+
+        <!-- 5. Actions -->
+        <div>
+          <button type="submit" class="btn-apply-filters">
+            <i class="fa-solid fa-check"></i> Apply Filters
+          </button>
+          <button type="button" class="btn-reset-filters" id="resetFiltersBtn">
+            Reset All Filters
+          </button>
+        </div>
+      </div>
+
+      <div class="filter-modal-foot">
+        <div>
+          <span class="status-dot-green"></span> Filtering across 42 Fleet Hubs
+        </div>
+        <div>
+          DriveSphere v2.4
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="http://localhost/drivesphere_updated/js/portal.js"></script>
+</body>
+</html>
