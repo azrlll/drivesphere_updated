@@ -2,10 +2,10 @@
 // Customer submits a rental request -> saved as 'pending' for the admin to approve.
 require_once __DIR__ . '/../includes/functions.php';
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
-    redirect('customer/browse.php');
+    redirect('customer/dashboard.php');
 }
 require_customer();
-csrf_check('customer/browse.php');
+csrf_check('customer/dashboard.php');
 $pdo = getDBConnection();
 
 $vehicleId = (int)($_POST['vehicle_id'] ?? 0);

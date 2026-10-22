@@ -177,9 +177,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="container ef-bottom-container">
                 <div>© 2026 DriveSphere Philippines Inc. All rights reserved. Registered Enterprise Fleet Portal.</div>
                 <div class="ef-links">
-                    Privacy Policy
-                    Security Protocol
-                    Help Center
+                    <a href="<?= BASE_URL ?>policies.php" style="color:inherit;text-decoration:none;">Privacy Policy</a>
+                    <a href="<?= BASE_URL ?>policies.php#article-4" style="color:inherit;text-decoration:none;">Security Protocol</a>
+                    <a href="<?= BASE_URL ?>help.php" style="color:inherit;text-decoration:none;">Help Center</a>
                 </div>
             </div>
         </div>

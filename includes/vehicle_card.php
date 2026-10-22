@@ -5,7 +5,7 @@ function render_vehicle_card($v, $qs = '') {
     $link = BASE_URL . 'customer/vehicle.php?id=' . (int)$v['id'] . ($qs !== '' ? '&' . $qs : '');
     ?>
     <div class="vcard">
-        <div class="img" style="background-image:url('<?= e($v['image_url']) ?>')">
+        <div class="img" style="background-image:url('<?= e(vehicle_image_url($v['image_path'] ?? $v['image_url'])) ?>')">
             <?= $free ? '<span class="badge b-green">Available</span>' : '<span class="badge b-red">' . ($v['status'] === 'maintenance' ? 'Maintenance' : 'Unavailable') . '</span>' ?>
         </div>
         <div class="body">

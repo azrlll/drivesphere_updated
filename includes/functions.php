@@ -78,11 +78,17 @@ function csrf_check($redirectFallback = null) {
 
 /* ---------- roles ---------- */
 function is_admin() {
+    if (($_SESSION['user_role'] ?? '') === 'customer') {
+        return false;
+    }
     return (!empty($_SESSION['admin_user_id']) && ($_SESSION['admin_user_role'] ?? '') === 'admin')
         || (!empty($_SESSION['user_id']) && ($_SESSION['user_role'] ?? '') === 'admin');
 }
 
 function is_customer() {
+    if (($_SESSION['user_role'] ?? '') === 'admin') {
+        return false;
+    }
     return (!empty($_SESSION['customer_user_id']) && ($_SESSION['customer_user_role'] ?? '') === 'customer')
         || (!empty($_SESSION['user_id']) && ($_SESSION['user_role'] ?? '') === 'customer');
 }
@@ -175,21 +181,20 @@ function login_user($user) {
 }
 
 function login_admin($user) {
+    unset($_SESSION['customer_user_id'], $_SESSION['customer_user_name'], $_SESSION['customer_user_email'], $_SESSION['customer_user_role']);
     $_SESSION['admin_user_id']    = (int)$user['id'];
     $_SESSION['admin_user_name']  = $user['first_name'] . ' ' . $user['last_name'];
     $_SESSION['admin_user_email'] = $user['email'];
     $_SESSION['admin_user_role']  = 'admin';
 
-    // Set general session if not already occupied by an active customer
-    if (empty($_SESSION['customer_user_id'])) {
-        $_SESSION['user_id']    = (int)$user['id'];
-        $_SESSION['user_name']  = $user['first_name'] . ' ' . $user['last_name'];
-        $_SESSION['user_email'] = $user['email'];
-        $_SESSION['user_role']  = 'admin';
-    }
+    $_SESSION['user_id']    = (int)$user['id'];
+    $_SESSION['user_name']  = $user['first_name'] . ' ' . $user['last_name'];
+    $_SESSION['user_email'] = $user['email'];
+    $_SESSION['user_role']  = 'admin';
 }
 
 function login_customer($user) {
+    unset($_SESSION['admin_user_id'], $_SESSION['admin_user_name'], $_SESSION['admin_user_email'], $_SESSION['admin_user_role']);
     $_SESSION['customer_user_id']    = (int)$user['id'];
     $_SESSION['customer_user_name']  = $user['first_name'] . ' ' . $user['last_name'];
     $_SESSION['customer_user_email'] = $user['email'];
@@ -241,6 +246,17 @@ function calc_price($dailyRate, $days) {
     $base = round($dailyRate * $days, 2);
     $vat  = round($base * VAT_RATE, 2);
     return ['days' => $days, 'base' => $base, 'vat' => $vat, 'total' => $base + $vat, 'deposit' => SECURITY_DEPOSIT];
+}
+
+/* ---------- vehicle image resolver ---------- */
+function vehicle_image_url($pathOrUrl) {
+    if (empty($pathOrUrl)) {
+        return BASE_URL . 'images/DriveSphere_logo.jpg';
+    }
+    if (str_starts_with($pathOrUrl, 'http://') || str_starts_with($pathOrUrl, 'https://')) {
+        return $pathOrUrl;
+    }
+    return BASE_URL . ltrim($pathOrUrl, '/');
 }
 
 /* ---------- availability ---------- */

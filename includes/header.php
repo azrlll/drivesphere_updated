@@ -15,19 +15,8 @@ $navLinks = [
 $activePage = $currentPage;
 if ($currentPage === 'book.php') {
     $activePage = 'rental.php';
-} elseif (in_array($currentPage, ['policies.php', 'contact.php', 'reviews.php'])) {
+} elseif (in_array($currentPage, ['policies.php', 'contact.php'])) {
     $activePage = 'help.php';
-}
-
-$loggedIn = is_logged_in();
-if (is_admin()) {
-    $displayName = admin_user_name();
-} elseif (is_customer()) {
-    $displayName = customer_user_name() ?: ($_SESSION['user_name'] ?? 'Customer');
-} elseif ($loggedIn) {
-    $displayName = $_SESSION['user_name'] ?? 'User';
-} else {
-    $displayName = 'User Preview';
 }
 ?>
 <header class="main-header">
@@ -46,7 +35,7 @@ if (is_admin()) {
     </nav>
 
     <div class="header-actions">
-        <!-- Account Avatar Capsule & Dropdown Modal (matches index.php & Public_Dropdown.png) -->
+        <!-- Account Avatar Capsule & Dropdown Modal (matches Public_Dropdown.png and Figma Mockup) -->
         <div class="account-wrapper">
             <button id="accountTrigger" class="user-avatar-capsule" type="button" aria-expanded="false" aria-label="User Account Menu">
                 <span class="capsule-avatar-circle">
@@ -78,51 +67,24 @@ if (is_admin()) {
                         </div>
                         <span class="status-dot-online"></span>
                     </div>
-                    <h3 class="user-display-name"><?= e($displayName) ?></h3>
+                    <h3 class="user-display-name">User Preview</h3>
                 </div>
 
                 <div class="menu-section-label">ACCOUNT</div>
                 <ul class="dropdown-menu-list">
-                    <?php if (is_admin()): ?>
-                        <li><a href="<?= BASE_URL ?>admin/dashboard.php" class="dropdown-item">
-                            <div class="item-left"><i class="fa-solid fa-gear item-icon"></i><span class="item-text">Settings</span></div>
-                            <i class="fa-solid fa-chevron-right item-arrow"></i></a></li>
-                        <li><a href="<?= BASE_URL ?>admin/notifications.php" class="dropdown-item">
-                            <div class="item-left"><i class="fa-regular fa-bell item-icon"></i><span class="item-text">Notifications</span></div>
-                            <i class="fa-solid fa-chevron-right item-arrow"></i></a></li>
-                        <li><a href="<?= BASE_URL ?>admin/help.php" class="dropdown-item">
-                            <div class="item-left"><i class="fa-regular fa-circle-question item-icon"></i><span class="item-text">Help &amp; Support</span></div>
-                            <i class="fa-solid fa-chevron-right item-arrow"></i></a></li>
-                    <?php elseif (is_customer()): ?>
-                        <li><a href="<?= BASE_URL ?>customer/settings.php" class="dropdown-item">
-                            <div class="item-left"><i class="fa-solid fa-gear item-icon"></i><span class="item-text">Settings</span></div>
-                            <i class="fa-solid fa-chevron-right item-arrow"></i></a></li>
-                        <li><a href="<?= BASE_URL ?>customer/notifications.php" class="dropdown-item">
-                            <div class="item-left"><i class="fa-regular fa-bell item-icon"></i><span class="item-text">Notifications</span></div>
-                            <i class="fa-solid fa-chevron-right item-arrow"></i></a></li>
-                        <li><a href="<?= BASE_URL ?>customer/help.php" class="dropdown-item">
-                            <div class="item-left"><i class="fa-regular fa-circle-question item-icon"></i><span class="item-text">Help &amp; Support</span></div>
-                            <i class="fa-solid fa-chevron-right item-arrow"></i></a></li>
-                    <?php else: ?>
-                        <!-- Guest User Preview State (matches Public_Dropdown.png exactly) -->
-                        <li><a href="<?= BASE_URL ?>login.php?redirect=customer/settings.php" class="dropdown-item">
-                            <div class="item-left"><i class="fa-solid fa-gear item-icon"></i><span class="item-text">Settings</span></div>
-                            <i class="fa-solid fa-chevron-right item-arrow"></i></a></li>
-                        <li><a href="<?= BASE_URL ?>login.php?redirect=customer/notifications.php" class="dropdown-item">
-                            <div class="item-left"><i class="fa-regular fa-bell item-icon"></i><span class="item-text">Notifications</span></div>
-                            <i class="fa-solid fa-chevron-right item-arrow"></i></a></li>
-                        <li><a href="<?= BASE_URL ?>help.php" class="dropdown-item">
-                            <div class="item-left"><i class="fa-regular fa-circle-question item-icon"></i><span class="item-text">Help &amp; Support</span></div>
-                            <i class="fa-solid fa-chevron-right item-arrow"></i></a></li>
-                    <?php endif; ?>
+                    <li><a href="<?= BASE_URL ?>login.php?redirect=customer/settings.php" class="dropdown-item">
+                        <div class="item-left"><i class="fa-solid fa-gear item-icon"></i><span class="item-text">Settings</span></div>
+                        <i class="fa-solid fa-chevron-right item-arrow"></i></a></li>
+                    <li><a href="<?= BASE_URL ?>login.php?redirect=customer/notifications.php" class="dropdown-item">
+                        <div class="item-left"><i class="fa-regular fa-bell item-icon"></i><span class="item-text">Notifications</span></div>
+                        <i class="fa-solid fa-chevron-right item-arrow"></i></a></li>
+                    <li><a href="<?= BASE_URL ?>help.php" class="dropdown-item">
+                        <div class="item-left"><i class="fa-regular fa-circle-question item-icon"></i><span class="item-text">Help &amp; Support</span></div>
+                        <i class="fa-solid fa-chevron-right item-arrow"></i></a></li>
                 </ul>
 
                 <div class="dropdown-logout-wrapper">
-                    <?php if ($loggedIn): ?>
-                        <a href="<?= BASE_URL ?>actions/logout.php" class="logout-link"><i class="fa-solid fa-right-from-bracket"></i><span>Log Out</span></a>
-                    <?php else: ?>
-                        <a href="<?= BASE_URL ?>login.php" class="logout-link"><i class="fa-solid fa-arrow-right-to-bracket"></i><span>Log In</span></a>
-                    <?php endif; ?>
+                    <a href="<?= BASE_URL ?>login.php" class="logout-link"><i class="fa-solid fa-arrow-right-to-bracket"></i><span>Log In</span></a>
                 </div>
             </div>
         </div>

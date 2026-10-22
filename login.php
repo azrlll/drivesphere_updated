@@ -1,7 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/functions.php';
 $redirectTarget = get_safe_redirect('redirect', 'customer/dashboard.php');
-if (is_customer()) { redirect($redirectTarget); }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $redirectFallback = 'login.php' . ($redirectTarget !== 'customer/dashboard.php' ? '?redirect=' . urlencode($redirectTarget) : '');
@@ -50,13 +49,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Simplified Login Header -->
     <header class="login-header">
         <div class="container lh-container">
-            <div class="logo">
+            <a href="<?= BASE_URL ?>index.php" class="logo" style="text-decoration:none; color:inherit;">
                 <img src="images/DriveSphere_logo.jpg" alt="DriveSphere Logo">
                 <div class="logo-text">
                     <span>DriveSphere</span>
                     <small>PHILIPPINE MOBILITY & FLEET</small>
                 </div>
-            </div>
+            </a>
             <div class="lh-links">
                 <a href="<?= BASE_URL ?>index.php">Public Website</a>
                 <a href="<?= BASE_URL ?>help.php">Help Center</a>
@@ -79,6 +78,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p class="login-subtitle">Welcome back to DriveSphere. Access your vehicle bookings, corporate vouchers, and personal rental itinerary.</p>
 
             <?php flash_show(); ?>
+
+            <?php if (is_customer()): ?>
+                <div style="background: #e0f2fe; border: 1px solid #7dd3fc; border-radius: 8px; padding: 12px 14px; margin-bottom: 20px; font-size: 13px; color: #0369a1; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <div>
+                        <i class="fa-solid fa-circle-check" style="color: #0284c7; margin-right: 6px;"></i>
+                        Currently logged in as <strong><?= e($_SESSION['user_name'] ?? 'Customer') ?></strong>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <a href="<?= BASE_URL . ltrim($redirectTarget, '/') ?>" style="background: #0284c7; color: #ffffff; padding: 6px 14px; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;">
+                            Proceed &rarr;
+                        </a>
+                        <a href="<?= BASE_URL ?>actions/logout.php" style="color: #64748b; font-size: 12px; text-decoration: underline;">
+                            Log Out
+                        </a>
+                    </div>
+                </div>
+            <?php elseif (is_admin()): ?>
+                <div style="background: #fef3c7; border: 1px solid #fde68a; border-radius: 8px; padding: 12px 14px; margin-bottom: 20px; font-size: 13px; color: #92400e; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <div>
+                        <i class="fa-solid fa-shield-halved" style="color: #d97706; margin-right: 6px;"></i>
+                        Currently logged in as <strong>Administrator</strong>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <a href="<?= BASE_URL ?>admin/dashboard.php" style="background: #0f172a; color: #ffffff; padding: 6px 14px; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 12px; display: inline-flex; align-items: center; gap: 6px;">
+                            Admin Console &rarr;
+                        </a>
+                        <a href="<?= BASE_URL ?>actions/logout.php" style="color: #64748b; font-size: 12px; text-decoration: underline;">
+                            Log Out
+                        </a>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <form class="login-form" method="post" action="<?= BASE_URL ?>login.php">
                 <?= csrf_field() ?>
                 <?php if ($redirectTarget !== 'customer/dashboard.php'): ?>
@@ -88,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <label>USERNAME OR REGISTERED EMAIL <span class="req">*</span></label>
                     <div class="input-icon-wrapper">
                         <i class="fa-regular fa-user"></i>
-                        <input type="email" name="email" placeholder="m.santos@gmail.com" required>
+                        <input type="email" name="email" id="emailInput" placeholder="m.santos@gmail.com" value="carlos@drivesphere.ph" required>
                     </div>
                 </div>
                 
@@ -100,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                     <div class="input-icon-wrapper">
                         <i class="fa-solid fa-lock"></i>
-                        <input type="password" name="password" placeholder="Enter your password" id="passwordInput" required>
+                        <input type="password" name="password" placeholder="Enter your password" id="passwordInput" value="password123" required>
                         <i class="fa-regular fa-eye toggle-pw" id="togglePwIcon"></i>
                     </div>
                 </div>

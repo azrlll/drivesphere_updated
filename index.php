@@ -1,4 +1,7 @@
-<?php require_once __DIR__ . '/includes/functions.php'; ?>
+<?php 
+require_once __DIR__ . '/includes/functions.php'; 
+$pdo = getDBConnection();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -34,7 +37,7 @@
             <span class="pulse-dot" style="background:#38bdf8;width:7px;height:7px;display:inline-block;border-radius:50%;margin-right:8px;"></span>PREMIER PHILIPPINE FLEET NETWORK
         </span>
         <h1>Experience Premium Drives Across the Philippines</h1>
-        <p>Discover self-drive and chauffeur rentals with seamless online booking, verified vehicle maintenance, and 24/7 roadside assistance.</p>
+        <p>Discover self-drive and chauffeur rentals with seamless online booking, verified vehicle maintenance, and 24/7 dedicated customer support.</p>
         <div class="hero-buttons">
             <a href="rental.php" class="btn btn-primary btn-large">
                 Explore Rental Fleet <i class="fa-solid fa-arrow-right"></i>
@@ -119,8 +122,8 @@
     <div class="feature-item">
         <div class="feature-icon"><i class="fa-solid fa-headset"></i></div>
         <div class="feature-text">
-            <h4>24/7 Roadside</h4>
-            <p>Nationwide quick dispatch</p>
+            <h4>24/7 Support</h4>
+            <p>Nationwide quick assistance</p>
         </div>
     </div>
 
@@ -161,267 +164,63 @@
         </a>
     </div>
 
-    <!-- Fleet Grid (6 Vehicles in 2-column layout matching SCREEN P01) -->
+    <!-- Fleet Grid (6 Vehicles in 2-column layout fetched dynamically from MySQL) -->
     <div class="fleet-grid">
-    
-        <!-- Vehicle 1: Toyota Fortuner -->
+    <?php 
+    $featuredSt = $pdo->query("SELECT v.*, c.name AS category_name FROM vehicles v 
+                               JOIN categories c ON v.category_id = c.id 
+                               WHERE v.status = 'available' 
+                               ORDER BY v.id ASC LIMIT 6");
+    $homeFeatured = $featuredSt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($homeFeatured as $fv): 
+        $fImg = vehicle_image_url($fv['image_path'] ?: $fv['image_url']);
+        $fTitle = ($fv['brand'] ?: $fv['make']) . ' ' . $fv['model'];
+        $fTag = $fv['tag_label'] ?: (strtoupper($fv['category']) . ' • ' . $fv['year']);
+        $fTarget = 'customer/vehicle.php?id=' . (int)$fv['id'];
+        $fLoginLink = BASE_URL . 'login.php?redirect=' . urlencode($fTarget);
+    ?>
         <div class="fleet-card">
-            <div class="card-image-placeholder">
-                <img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=800" alt="Toyota Fortuner LTD 2.8L" style="width:100%; height:100%; object-fit:cover;">
+            <a href="<?= e($fLoginLink) ?>" class="card-image-placeholder" title="View details of <?= e($fTitle) ?>">
+                <img src="<?= e($fImg) ?>" alt="<?= e($fTitle) ?>">
                 <div class="card-tags">
-                    <span class="tag tag-black">7-SEATER PREMIUM DIESEL SUV</span>
+                    <span class="tag tag-black"><?= e($fTag) ?></span>
                     <span class="tag tag-white"><span class="status-dot"></span> Instant Self-Drive</span>
                 </div>
-            </div>
+            </a>
             <div class="card-content">
-                <h3>Toyota Fortuner LTD 2.8L</h3>
-                <p class="description">Top-tier performance with premium leather captain seats and JBL audio system.</p>
+                <h3><a href="<?= e($fLoginLink) ?>" style="color:inherit;text-decoration:none;"><?= e($fTitle) ?></a></h3>
+                <p class="description"><?= e($fv['description']) ?></p>
 
                 <div class="specs-grid">
                     <div class="spec-item">
                         <i class="fa-solid fa-gear"></i>
-                        <strong>Automatic</strong>
-                        <span>6-Speed AT</span>
+                        <strong><?= e($fv['transmission']) ?></strong>
+                        <span>Drivetrain</span>
                     </div>
                     <div class="spec-item">
                         <i class="fa-solid fa-gas-pump"></i>
-                        <strong>Diesel</strong>
-                        <span>2.8L Turbo</span>
+                        <strong><?= e($fv['fuel_type']) ?></strong>
+                        <span>Fuel Type</span>
                     </div>
                     <div class="spec-item">
                         <i class="fa-solid fa-users"></i>
-                        <strong>7 Seats</strong>
-                        <span>Tri-Zone AC</span>
+                        <strong><?= (int)($fv['seating_capacity'] ?: $fv['seats']) ?> Seats</strong>
+                        <span>Capacity</span>
                     </div>
                 </div>
 
                 <div class="card-footer">
                     <div class="price">
                         <span class="currency-label">DAILY RATE</span>
-                        <div><strong>₱4,200</strong> <span class="period">/ day</span></div>
+                        <div><strong>₱<?= number_format($fv['daily_rate'], 0) ?></strong> <span class="period">/ day</span></div>
                     </div>
-                    <a href="book.php?vehicle=1" class="btn btn-primary">
+                    <a href="<?= e($fLoginLink) ?>" class="btn btn-primary">
                         Rent Now <i class="fa-solid fa-arrow-up-right-from-square"></i>
                     </a>
                 </div>
             </div>
         </div>
-
-        <!-- Vehicle 2: Honda Civic -->
-        <div class="fleet-card">
-            <div class="card-image-placeholder">
-                <img src="https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?auto=format&fit=crop&q=80&w=800" alt="Honda Civic RS Turbo" style="width:100%; height:100%; object-fit:cover;">
-                <div class="card-tags">
-                    <span class="tag tag-black">SPORT EXECUTIVE SEDAN</span>
-                    <span class="tag tag-white"><span class="status-dot"></span> Instant Self-Drive</span>
-                </div>
-            </div>
-            <div class="card-content">
-                <h3>Honda Civic RS Turbo</h3>
-                <p class="description">Agile handling with Honda SENSING suite, wireless CarPlay, and sports paddle shifters.</p>
-
-                <div class="specs-grid">
-                    <div class="spec-item">
-                        <i class="fa-solid fa-gear"></i>
-                        <strong>Automatic</strong>
-                        <span>CVT Sport</span>
-                    </div>
-                    <div class="spec-item">
-                        <i class="fa-solid fa-gas-pump"></i>
-                        <strong>Petrol</strong>
-                        <span>1.5L Turbo</span>
-                    </div>
-                    <div class="spec-item">
-                        <i class="fa-solid fa-users"></i>
-                        <strong>5 Seats</strong>
-                        <span>Sport Cockpit</span>
-                    </div>
-                </div>
-
-                <div class="card-footer">
-                    <div class="price">
-                        <span class="currency-label">DAILY RATE</span>
-                        <div><strong>₱3,500</strong> <span class="period">/ day</span></div>
-                    </div>
-                    <a href="book.php?vehicle=2" class="btn btn-primary">
-                        Rent Now <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Vehicle 3: Mitsubishi Montero -->
-        <div class="fleet-card">
-            <div class="card-image-placeholder">
-                <img src="https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&q=80&w=800" alt="Mitsubishi Montero Sport GT" style="width:100%; height:100%; object-fit:cover;">
-                <div class="card-tags">
-                    <span class="tag tag-black">FAMILY ADVENTURE SUV</span>
-                    <span class="tag tag-white"><span class="status-dot"></span> Ready to Drive</span>
-                </div>
-            </div>
-            <div class="card-content">
-                <h3>Mitsubishi Montero Sport GT</h3>
-                <p class="description">High ground clearance, 8-speed automatic, and spacious 3-row comfort for long road trips.</p>
-
-                <div class="specs-grid">
-                    <div class="spec-item">
-                        <i class="fa-solid fa-gear"></i>
-                        <strong>Automatic</strong>
-                        <span>8-Speed AT</span>
-                    </div>
-                    <div class="spec-item">
-                        <i class="fa-solid fa-gas-pump"></i>
-                        <strong>Diesel</strong>
-                        <span>2.4L MIVEC</span>
-                    </div>
-                    <div class="spec-item">
-                        <i class="fa-solid fa-users"></i>
-                        <strong>7 Seats</strong>
-                        <span>Family Setup</span>
-                    </div>
-                </div>
-
-                <div class="card-footer">
-                    <div class="price">
-                        <span class="currency-label">DAILY RATE</span>
-                        <div><strong>₱3,900</strong> <span class="period">/ day</span></div>
-                    </div>
-                    <a href="book.php?vehicle=3" class="btn btn-primary">
-                        Rent Now <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Vehicle 4: Toyota HiAce -->
-        <div class="fleet-card">
-            <div class="card-image-placeholder">
-                <img src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=800" alt="Toyota HiAce Grandia Elite" style="width:100%; height:100%; object-fit:cover;">
-                <div class="card-tags">
-                    <span class="tag tag-blue">EXECUTIVE VAN / CHAUFFEUR READY</span>
-                    <span class="tag tag-white"><i class="fa-solid fa-couch" style="margin-right:4px;"></i> Captain Seats</span>
-                </div>
-            </div>
-            <div class="card-content">
-                <h3>Toyota HiAce Grandia Elite</h3>
-                <p class="description">First-class individual reclining Ottoman seats, dual power sliding doors, whisper-quiet cabin.</p>
-
-                <div class="specs-grid">
-                    <div class="spec-item">
-                        <i class="fa-solid fa-gear"></i>
-                        <strong>Automatic</strong>
-                        <span>6-Speed AT</span>
-                    </div>
-                    <div class="spec-item">
-                        <i class="fa-solid fa-gas-pump"></i>
-                        <strong>Diesel</strong>
-                        <span>2.8L D-4D</span>
-                    </div>
-                    <div class="spec-item">
-                        <i class="fa-solid fa-users"></i>
-                        <strong>10 Seats</strong>
-                        <span>VIP Layout</span>
-                    </div>
-                </div>
-
-                <div class="card-footer">
-                    <div class="price">
-                        <span class="currency-label">DAILY RATE</span>
-                        <div><strong>₱5,800</strong> <span class="period">/ day</span></div>
-                    </div>
-                    <a href="book.php?vehicle=4" class="btn btn-primary">
-                        Rent Now <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Vehicle 5: Mazda 3 -->
-        <div class="fleet-card">
-            <div class="card-image-placeholder">
-                <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=800" alt="Mazda 3 Fastback Premium" style="width:100%; height:100%; object-fit:cover;">
-                <div class="card-tags">
-                    <span class="tag tag-black">REFINED COMPACT SEDAN</span>
-                    <span class="tag tag-white"><span class="status-dot"></span> Instant Self-Drive</span>
-                </div>
-            </div>
-            <div class="card-content">
-                <h3>Mazda 3 Fastback Premium</h3>
-                <p class="description">Japanese mastercraft interior, heads-up display, and Bose 12-speaker surround sound.</p>
-
-                <div class="specs-grid">
-                    <div class="spec-item">
-                        <i class="fa-solid fa-gear"></i>
-                        <strong>Automatic</strong>
-                        <span>SKYACTIV-Drive</span>
-                    </div>
-                    <div class="spec-item">
-                        <i class="fa-solid fa-gas-pump"></i>
-                        <strong>Petrol</strong>
-                        <span>2.0L M-Hybrid</span>
-                    </div>
-                    <div class="spec-item">
-                        <i class="fa-solid fa-users"></i>
-                        <strong>5 Seats</strong>
-                        <span>Luxury Trim</span>
-                    </div>
-                </div>
-
-                <div class="card-footer">
-                    <div class="price">
-                        <span class="currency-label">DAILY RATE</span>
-                        <div><strong>₱3,200</strong> <span class="period">/ day</span></div>
-                    </div>
-                    <a href="book.php?vehicle=5" class="btn btn-primary">
-                        Rent Now <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Vehicle 6: Ford Everest -->
-        <div class="fleet-card">
-            <div class="card-image-placeholder">
-                <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80&w=800" alt="Ford Everest Titanium+ 4x4" style="width:100%; height:100%; object-fit:cover;">
-                <div class="card-tags">
-                    <span class="tag tag-black">LUXURY OFF-ROAD SUV</span>
-                    <span class="tag tag-white"><span class="status-dot"></span> All-Terrain 4WD</span>
-                </div>
-            </div>
-            <div class="card-content">
-                <h3>Ford Everest Titanium+ 4x4</h3>
-                <p class="description">Bi-Turbo power with panoramic moonroof, 12-inch portrait sync display, and 360 camera.</p>
-
-                <div class="specs-grid">
-                    <div class="spec-item">
-                        <i class="fa-solid fa-gear"></i>
-                        <strong>Automatic</strong>
-                        <span>10-Speed e-Shifter</span>
-                    </div>
-                    <div class="spec-item">
-                        <i class="fa-solid fa-gas-pump"></i>
-                        <strong>Bi-Turbo</strong>
-                        <span>2.0L Diesel</span>
-                    </div>
-                    <div class="spec-item">
-                        <i class="fa-solid fa-users"></i>
-                        <strong>7 Seats</strong>
-                        <span>Power Fold 3rd Row</span>
-                    </div>
-                </div>
-
-                <div class="card-footer">
-                    <div class="price">
-                        <span class="currency-label">DAILY RATE</span>
-                        <div><strong>₱4,600</strong> <span class="period">/ day</span></div>
-                    </div>
-                    <a href="book.php?vehicle=6" class="btn btn-primary">
-                        Rent Now <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-
+    <?php endforeach; ?>
     </div><!-- /.fleet-grid -->
 
 </div>

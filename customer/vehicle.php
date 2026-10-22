@@ -14,17 +14,30 @@ if (!$v) {
     $v = $st->fetch();
     if (!$v) {
         flash_set('error', 'Vehicle not found.');
-        redirect('customer/browse.php');
+        redirect('customer/dashboard.php');
     }
 }
+
+// Hub & Location resolution
+$hubParam = $_GET['hub'] ?? $_GET['pickup_location'] ?? 'bgc';
+$hubLabels = [
+    'bgc' => 'Metro Manila - BGC Hub (Active)',
+    'mnl' => 'NAIA Airport Terminal 3 Hub',
+    'makati' => 'Makati CBD Hub (Ayala Center)',
+    'ortigas' => 'Ortigas Center - Pasig Hub',
+    'crk' => "Clark Int'l Airport Hub (Pampanga)",
+    'ceb' => 'Cebu City - Mactan Airport Hub',
+    'dvo' => 'Davao City - Lanang Hub'
+];
+$pickupLocationDisplay = $hubLabels[$hubParam] ?? (in_array($hubParam, $hubLabels) ? $hubParam : 'Metro Manila - BGC Hub (Active)');
 
 // Vehicle specific metadata / defaults matching Image 2
 $fleetId = 'MNL-FT-' . str_pad($v['id'], 3, '0', STR_PAD_LEFT);
 $categoryClass = strtoupper($v['category_name'] ?? 'PREMIUM SUV CLASS');
 
-// Date parameters (default to 3-day rental: Nov 15, 2025 -> Nov 18, 2025 or current relative)
-$pickupDateVal = $_GET['pickup_date'] ?? date('Y-m-d', strtotime('+1 day'));
-$returnDateVal = $_GET['return_date'] ?? date('Y-m-d', strtotime('+4 days'));
+// Date parameters (default to 3-day rental: +3 days -> +6 days)
+$pickupDateVal = $_GET['pickup_date'] ?? date('Y-m-d', strtotime('+3 days'));
+$returnDateVal = $_GET['return_date'] ?? date('Y-m-d', strtotime('+6 days'));
 
 $pickupTime = strtotime($pickupDateVal);
 $returnTime = strtotime($returnDateVal);
@@ -36,33 +49,35 @@ $days = max(1, (int)round(($returnTime - $pickupTime) / 86400));
 $dailyRate = (float)$v['daily_rate'];
 $subtotal = $days * $dailyRate;
 $deposit = 5000.00;
-$total = $subtotal; // As shown in mockup: Estimated Total matches days * rate, with insurance included and deposit noted
+$total = $subtotal;
 
-// Image resolution
-$vehiclePhoto = !empty($v['image_url']) && str_starts_with($v['image_url'], 'http')
-    ? $v['image_url']
-    : (file_exists(__DIR__ . '/../images/rental_fortuner_photo.png') && $v['id'] == 1 
-        ? BASE_URL . 'images/rental_fortuner_photo.png' 
-        : BASE_URL . 'images/browse_fortuner.png');
+// Initial server-side availability check
+$pickupSql = date('Y-m-d 09:00:00', $pickupTime);
+$returnSql = date('Y-m-d 18:00:00', $returnTime);
+$isInitiallyAvailable = vehicle_is_available($pdo, $v['id'], $pickupSql, $returnSql);
+
+// Image resolution - local downloaded vehicle photo
+$vehiclePhoto = vehicle_image_url($v['image_path'] ?: $v['image_url']);
 
 // Custom descriptions per vehicle or mockup standard
+$vehicleFullName = ($v['brand'] ?: $v['make']) . ' ' . $v['model'];
 $descP1 = !empty($v['description']) 
     ? $v['description'] 
-    : 'Engineered for executive journeys, family holiday retreats, and extended provincial touring across Northern and Southern Luzon. The ' . e($v['make'] . ' ' . $v['model']) . ' delivers an authoritative presence combined with whisper-quiet cabin insulation and responsive performance.';
+    : 'Engineered for executive journeys, family holiday retreats, and extended provincial touring across Northern and Southern Luzon. The ' . e($vehicleFullName) . ' delivers an authoritative presence combined with whisper-quiet cabin insulation and responsive performance.';
 
 $descP2 = 'Equipped with full safety sensors, adaptive drive controls, and advanced connectivity. Whether navigating metropolitan Manila corridors or winding ascent routes up to Baguio and Tagaytay, this self-drive vehicle delivers absolute confidence and spacious comfort.';
+
+$backUrl = (!empty($_SERVER['HTTP_REFERER']) && str_contains($_SERVER['HTTP_REFERER'], 'browse')) ? $C . 'browse.php' : $C . 'dashboard.php';
+$backLabel = 'Back to Vehicles';
 ?>
 
 <div class="v-details-container">
     <!-- Top Action Bar -->
     <div class="v-top-bar">
-        <a href="<?= $C ?>dashboard.php" class="back-link">
-            <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+        <a href="<?= $backUrl ?>" class="back-link">
+            <i class="fa-solid fa-arrow-left"></i> <?= $backLabel ?>
         </a>
         <div class="v-top-actions">
-            <button type="button" class="btn-v-action" id="wishlistBtn" onclick="this.classList.toggle('active'); this.querySelector('span').innerText = this.classList.contains('active') ? 'Saved to Wishlist' : 'Save to Wishlist';">
-                <i class="fa-regular fa-bookmark"></i> <span>Save to Wishlist</span>
-            </button>
             <button type="button" class="btn-v-action" id="shareBtn" onclick="navigator.clipboard.writeText(window.location.href); alert('Link copied to clipboard!');">
                 <i class="fa-solid fa-share-nodes"></i> Share
             </button>
@@ -79,16 +94,16 @@ $descP2 = 'Equipped with full safety sensors, adaptive drive controls, and advan
                     <?= e($categoryClass) ?> &bull; Fleet ID: <?= e($fleetId) ?>
                 </div>
                 <div class="v-title-row">
-                    <h1 class="v-main-title"><?= e($v['make'] . ' ' . $v['model']) ?></h1>
-                    <span class="v-status-pill">
-                        <span class="dot"></span> Available for Rent
+                    <h1 class="v-main-title"><?= e($vehicleFullName) ?> (<?= (int)$v['year'] ?>)</h1>
+                    <span class="v-status-pill <?= $isInitiallyAvailable ? '' : 'reserved' ?>">
+                        <span class="dot"></span> <?= $isInitiallyAvailable ? 'Available for Rent' : 'Reserved / Unavailable' ?>
                     </span>
                 </div>
             </div>
 
             <!-- Big Visual Card -->
             <div class="v-visual-card">
-                <img src="<?= e($vehiclePhoto) ?>" alt="<?= e($v['make'] . ' ' . $v['model']) ?>" class="v-visual-img">
+                <img src="<?= e($vehiclePhoto) ?>" alt="<?= e($vehicleFullName) ?>" class="v-visual-img">
                 <span class="v-chip-left">
                     <i class="fa-solid fa-shield-halved"></i> Fully Inspected &amp; Sanitized
                 </span>
@@ -103,7 +118,7 @@ $descP2 = 'Equipped with full safety sensors, adaptive drive controls, and advan
                     <div class="key-spec-icon"><i class="fa-solid fa-user-group"></i></div>
                     <div class="key-spec-text">
                         <span class="key-spec-lbl">PASSENGER</span>
-                        <span class="key-spec-val"><?= (int)$v['seats'] ?> Seats</span>
+                        <span class="key-spec-val"><?= (int)($v['seating_capacity'] ?: $v['seats']) ?> Seats</span>
                     </div>
                 </div>
                 <div class="key-spec-box">
@@ -237,9 +252,9 @@ $descP2 = 'Equipped with full safety sensors, adaptive drive controls, and advan
                         <label class="w-input-lbl">Pick-up Location</label>
                         <div class="w-location-input-wrap">
                             <i class="fa-solid fa-location-dot" style="color: #0284c7;"></i>
-                            <span>Ninoy Aquino Int'l Airport (T3)</span>
+                            <span><?= e($pickupLocationDisplay) ?></span>
                         </div>
-                        <input type="hidden" name="pickup_location" value="Ninoy Aquino Int'l Airport (T3)">
+                        <input type="hidden" name="pickup_location" value="<?= e($pickupLocationDisplay) ?>">
                     </div>
 
                     <!-- Pick-up & Return Date Boxes -->
@@ -251,6 +266,26 @@ $descP2 = 'Equipped with full safety sensors, adaptive drive controls, and advan
                         <div class="w-date-box">
                             <span class="w-input-lbl" style="margin:0;"><i class="fa-regular fa-calendar"></i> Return Date</span>
                             <input type="date" name="return_date" id="returnDateInput" value="<?= e($returnDateVal) ?>" required>
+                        </div>
+                    </div>
+
+                    <!-- Check Availability Button -->
+                    <button type="button" class="btn-check-avail" id="btnCheckAvailability">
+                        <i class="fa-solid fa-calendar-check"></i> Check Availability
+                    </button>
+
+                    <!-- Real-Time Availability Feedback Box -->
+                    <div id="availStatusBox" class="avail-status-box <?= $isInitiallyAvailable ? 'available' : 'unavailable' ?>">
+                        <div class="avail-status-icon">
+                            <i class="fa-solid <?= $isInitiallyAvailable ? 'fa-circle-check' : 'fa-circle-xmark' ?>" id="availStatusIcon"></i>
+                        </div>
+                        <div class="avail-status-content">
+                            <strong id="availStatusTitle"><?= $isInitiallyAvailable ? 'Available for Selected Dates' : 'Unavailable for Selected Dates' ?></strong>
+                            <p id="availStatusDesc">
+                                <?= $isInitiallyAvailable 
+                                    ? 'Vehicle is verified in fleet stock and open for booking from ' . date('M d, Y', $pickupTime) . ' to ' . date('M d, Y', $returnTime) . '.'
+                                    : 'Vehicle is currently reserved for part of these dates. Please choose different dates.' ?>
+                            </p>
                         </div>
                     </div>
 
@@ -279,7 +314,7 @@ $descP2 = 'Equipped with full safety sensors, adaptive drive controls, and advan
                     </div>
 
                     <!-- Proceed CTA Button -->
-                    <button type="submit" class="btn-proceed-reserve">
+                    <button type="submit" class="btn-proceed-reserve" id="btnSubmitReservation" <?= !$isInitiallyAvailable ? 'disabled' : '' ?>>
                         Proceed to Price Overview &amp; Reservation &rarr;
                     </button>
                 </form>
@@ -292,7 +327,7 @@ $descP2 = 'Equipped with full safety sensors, adaptive drive controls, and advan
                     </div>
                     <div class="w-trust-item">
                         <i class="fa-solid fa-headset" style="color: #0284c7;"></i>
-                        <span>24/7 Roadside Assistance &amp; Fleet Hotline: <strong>(02) 8888-DRIVE</strong></span>
+                        <span>24/7 Customer Support &amp; Fleet Hotline: <strong>(02) 8888-DRIVE</strong></span>
                     </div>
                     <div class="w-trust-item">
                         <i class="fa-solid fa-shield-halved" style="color: #0284c7;"></i>
@@ -315,7 +350,7 @@ $descP2 = 'Equipped with full safety sensors, adaptive drive controls, and advan
     </div>
 </div>
 
-<!-- Interactive Date & Price Calculation Script -->
+<!-- Interactive Date, Price & Live Availability Check Script -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const pickupInput = document.getElementById('pickupDateInput');
@@ -323,24 +358,71 @@ document.addEventListener('DOMContentLoaded', function() {
     const rateCalcLabel = document.getElementById('rateCalculationLabel');
     const rateSubtotal = document.getElementById('rateSubtotalVal');
     const estimatedTotal = document.getElementById('estimatedTotalVal');
+    const btnCheckAvail = document.getElementById('btnCheckAvailability');
+    const availBox = document.getElementById('availStatusBox');
+    const availIcon = document.getElementById('availStatusIcon');
+    const availTitle = document.getElementById('availStatusTitle');
+    const availDesc = document.getElementById('availStatusDesc');
+    const btnSubmit = document.getElementById('btnSubmitReservation');
+    const vehicleId = <?= (int)$v['id'] ?>;
     const dailyRate = <?= (float)$dailyRate ?>;
 
-    function updatePrice() {
+    function checkAvailability() {
         if (!pickupInput || !returnInput) return;
-        const pDate = new Date(pickupInput.value);
-        const rDate = new Date(returnInput.value);
+        const pDate = pickupInput.value;
+        const rDate = returnInput.value;
+        if (!pDate || !rDate) return;
 
-        if (isNaN(pDate) || isNaN(rDate)) return;
+        if (availBox) {
+            availBox.className = 'avail-status-box';
+            if (availIcon) availIcon.className = 'fa-solid fa-circle-notch fa-spin';
+            if (availTitle) availTitle.textContent = 'Checking availability...';
+            if (availDesc) availDesc.textContent = 'Querying live MySQL database for ' + pDate + ' to ' + rDate + '...';
+        }
 
-        const diffTime = rDate - pDate;
-        let days = Math.round(diffTime / (1000 * 60 * 60 * 24));
-        if (days < 1) days = 1;
+        fetch('<?= BASE_URL ?>actions/check_availability.php?vehicle_id=' + vehicleId + '&pickup_date=' + encodeURIComponent(pDate) + '&return_date=' + encodeURIComponent(rDate))
+            .then(res => res.json())
+            .then(data => {
+                if (data.available) {
+                    if (availBox) {
+                        availBox.className = 'avail-status-box available';
+                        if (availIcon) availIcon.className = 'fa-solid fa-circle-check';
+                        if (availTitle) availTitle.textContent = 'Available for Selected Dates';
+                        if (availDesc) availDesc.textContent = data.message;
+                    }
+                    if (btnSubmit) {
+                        btnSubmit.disabled = false;
+                    }
+                    if (data.days && rateCalcLabel && rateSubtotal && estimatedTotal) {
+                        rateCalcLabel.innerHTML = '₱' + Number(data.daily_rate).toLocaleString() + ' &times; ' + data.days + ' Day' + (data.days > 1 ? 's' : '');
+                        rateSubtotal.innerText = '₱' + Number(data.subtotal).toLocaleString();
+                        estimatedTotal.innerText = '₱' + Number(data.total).toLocaleString();
+                    }
+                } else {
+                    if (availBox) {
+                        availBox.className = 'avail-status-box unavailable';
+                        if (availIcon) availIcon.className = 'fa-solid fa-circle-xmark';
+                        if (availTitle) availTitle.textContent = 'Unavailable for Selected Dates';
+                        if (availDesc) availDesc.textContent = data.message;
+                    }
+                    if (btnSubmit) {
+                        btnSubmit.disabled = true;
+                    }
+                }
+            })
+            .catch(err => {
+                console.error('Availability check error:', err);
+                if (availBox) {
+                    availBox.className = 'avail-status-box unavailable';
+                    if (availIcon) availIcon.className = 'fa-solid fa-triangle-exclamation';
+                    if (availTitle) availTitle.textContent = 'Check Failed';
+                    if (availDesc) availDesc.textContent = 'Unable to verify dates right now. Please try again.';
+                }
+            });
+    }
 
-        const subtotal = days * dailyRate;
-
-        rateCalcLabel.innerHTML = '₱' + dailyRate.toLocaleString() + ' &times; ' + days + ' Day' + (days > 1 ? 's' : '');
-        rateSubtotal.innerText = '₱' + subtotal.toLocaleString();
-        estimatedTotal.innerText = '₱' + subtotal.toLocaleString();
+    if (btnCheckAvail) {
+        btnCheckAvail.addEventListener('click', checkAvailability);
     }
 
     if (pickupInput && returnInput) {
@@ -350,9 +432,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 nextDay.setDate(nextDay.getDate() + 3);
                 returnInput.value = nextDay.toISOString().split('T')[0];
             }
-            updatePrice();
+            checkAvailability();
         });
-        returnInput.addEventListener('change', updatePrice);
+        returnInput.addEventListener('change', checkAvailability);
     }
 });
 </script>

@@ -108,7 +108,7 @@ require_once __DIR__ . '/includes/functions.php';
                 <div class="split-col text-col padding-right">
                     <div class="badge-pill-light">ISLAND-WIDE EXPANSION</div>
                     <h2>Strategic Mobility Hubs Across Key Metropolises</h2>
-                    <p>Operating from central hubs in BGC Taguig, Makati, Clark Freeport, and Cebu IT Park, DriveSphere provides rapid regional mobilization. Our dedicated roadside rescue network ensures no driver is ever stranded.</p>
+                    <p>Operating from central hubs in BGC Taguig, Makati, Clark Freeport, and Cebu IT Park, DriveSphere provides rapid regional mobilization. Our dedicated customer support network ensures no driver is ever stranded.</p>
                     <ul class="custom-bullets-icons">
                         <li><div class="hub-bullet-icon"><i class="fa-solid fa-headset"></i></div> <span>24/7 dedicated bilingual dispatch hotline with localized road mechanics.</span></li>
                         <li><div class="hub-bullet-icon"><i class="fa-solid fa-arrows-rotate"></i></div> <span>Instant replacement vehicle guarantee within 60 minutes in Metro Manila.</span></li>

@@ -1,23 +1,20 @@
 <?php
-// Public "Rent Now / Vehicle Details" buttons point here.
-// Logged-in customers go to the vehicle page; guests must log in first.
+// Public "Rent Now / Vehicle Details" fallback endpoint.
+// Always direct to customer login page with target vehicle redirect.
 require_once __DIR__ . '/includes/functions.php';
 
-$id     = (int)($_GET['vehicle'] ?? 0);
-$pickup = $_GET['pickup_date'] ?? '';
-$return = $_GET['return_date'] ?? '';
+$id = (int)($_GET['vehicle'] ?? $_GET['id'] ?? 0);
+$params = $_GET;
+unset($params['vehicle']);
+if ($id > 0) {
+    $params['id'] = $id;
+}
+$cleanParams = [];
+foreach ($params as $k => $v) {
+    $k = preg_replace('/^amp;/', '', $k);
+    $cleanParams[$k] = $v;
+}
+$qs = http_build_query($cleanParams);
+$target = 'customer/vehicle.php' . ($qs !== '' ? '?' . $qs : '');
 
-$target = 'customer/vehicle.php?id=' . $id;
-if ($pickup !== '' && $return !== '') {
-    $target .= '&pickup_date=' . urlencode($pickup) . '&return_date=' . urlencode($return);
-}
-
-if (is_customer()) {
-    redirect($target);
-}
-if (is_admin()) {
-    flash_set('error', 'Administrator accounts oversee the fleet from the Admin Console. To test booking as a customer, please sign in with a customer account.');
-    redirect('admin/manage.php');
-}
-flash_set('error', 'Please log in or register to reserve a vehicle.');
 redirect('login.php?redirect=' . urlencode($target));

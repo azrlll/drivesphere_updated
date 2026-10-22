@@ -66,7 +66,7 @@ require_once __DIR__ . '/includes/functions.php';
                             <h3>24 / 7</h3>
                             <i class="fa-solid fa-headset"></i>
                         </div>
-                        <strong>Roadside Support</strong>
+                        <strong>Dedicated Support</strong>
                         <p>Nationwide dispatch coverage</p>
                     </div>
                 </div>

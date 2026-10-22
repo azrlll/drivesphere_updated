@@ -1,4 +1,22 @@
-<?php require_once __DIR__ . '/includes/functions.php'; ?>
+<?php 
+require_once __DIR__ . '/includes/functions.php'; 
+$presetName = '';
+$presetEmail = '';
+$presetPhone = '';
+if (is_logged_in()) {
+    $uid = $_SESSION['user_id'] ?? 0;
+    if ($uid > 0) {
+        $uStmt = getDBConnection()->prepare("SELECT * FROM users WHERE id = ?");
+        $uStmt->execute([$uid]);
+        $uData = $uStmt->fetch();
+        if ($uData) {
+            $presetName = trim(($uData['first_name'] ?? '') . ' ' . ($uData['last_name'] ?? ''));
+            $presetEmail = $uData['email'] ?? '';
+            $presetPhone = $uData['phone'] ?? '';
+        }
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -32,7 +50,7 @@
             <div class="container">
                 <div class="badge badge-light-blue"><span class="pulse-dot" style="background:#0284c7;width:6px;height:6px;display:inline-block;border-radius:50%;margin-right:6px;"></span>24/7 CUSTOMER CONCIERGE &amp; SUPPORT</div>
                 <h1 class="contact-title">Contact DriveSphere Support</h1>
-                <p class="contact-subtitle">Have a question about vehicle dispatch, airport handovers, corporate billing, or need roadside assistance? Send our team a message or reach out through our direct priority lines.</p>
+                <p class="contact-subtitle">Have a question about vehicle dispatch, airport handovers, corporate billing, or need support? Send our team a message or reach out through our direct priority lines.</p>
             </div>
         </section>
 
@@ -56,25 +74,25 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Full Name <span>*</span></label>
-                                <input name="full_name" type="text" placeholder="e.g. Juan Dela Cruz" required>
+                                <input name="full_name" type="text" value="<?= e($presetName) ?>" placeholder="e.g. Juan Dela Cruz" required>
                             </div>
                             <div class="form-group">
                                 <label>Corporate / Personal Email <span>*</span></label>
-                                <input name="email" type="email" placeholder="e.g. juan.delacruz@company.ph" required>
+                                <input name="email" type="email" value="<?= e($presetEmail) ?>" placeholder="e.g. juan.delacruz@company.ph" required>
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Philippine Mobile Number (Optional)</label>
-                                <input name="phone" type="tel" placeholder="+63 917 123 4567">
+                                <input name="phone" type="tel" value="<?= e($presetPhone) ?>" placeholder="+63 917 123 4567">
                             </div>
                             <div class="form-group">
                                 <label>Inquiry Topic <span>*</span></label>
                                 <select name="category" required>
                                     <option value="" disabled selected>Select a dispatch topic...</option>
                                     <option value="booking">Booking &amp; Reservations</option>
-                                    <option value="roadside">Roadside Assistance</option>
+                                    <option value="support">Customer Support</option>
                                     <option value="billing">Billing &amp; Corporate Invoicing</option>
                                     <option value="other">Other Inquiry</option>
                                 </select>
@@ -123,12 +141,12 @@
                             <span class="status-indicator"><span class="pulse-dot"></span> DISPATCH DESK ACTIVE</span>
                             <span class="wait-time">Wait: &lt; 2 mins</span>
                         </div>
-                        <span class="dc-label">EMERGENCY 24/7 HOTLINE</span>
+                        <span class="dc-label">24/7 CUSTOMER HOTLINE</span>
                         <h3 class="dc-number">(02) 8888–DRIVE</h3>
                         
                         <div class="dc-subgrid">
                             <div class="dc-subitem border-right">
-                                <span>Mobile Roadside Line</span>
+                                <span>Mobile Support Line</span>
                                 <strong>+63 917 888 3748</strong>
                             </div>
                             <div class="dc-subitem">

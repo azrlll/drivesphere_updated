@@ -198,10 +198,10 @@ require_once __DIR__ . '/includes/functions.php';
                     <a href="<?= BASE_URL ?>contact.php" class="btn-card-action">Contact Support <i class="fa-regular fa-message"></i></a>
                 </div>
                 <div class="action-card">
-                    <div class="ac-icon"><i class="fa-solid fa-certificate"></i></div>
-                    <h3>Customer Experiences &amp; Reviews</h3>
-                    <p>Read verified feedback from corporate fleet partners, tourist travelers, and regular drivers across Metro Manila and Cebu.</p>
-                    <a href="<?= BASE_URL ?>reviews.php" class="btn-card-action">View Verified Reviews <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                    <div class="ac-icon"><i class="fa-solid fa-file-invoice"></i></div>
+                    <h3>Corporate &amp; Billing Support</h3>
+                    <p>Assistance with enterprise agreements, BIR 2307 tax documentation, corporate invoicing, and long-term fleet bookings.</p>
+                    <a href="<?= BASE_URL ?>contact.php" class="btn-card-action">Contact Billing <i class="fa-solid fa-arrow-right"></i></a>
                 </div>
             </div>
         </section>

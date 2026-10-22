@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><base href="http://localhost/drivesphere_updated/customer/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Help &amp; Support - DriveSphere</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="http://localhost/drivesphere_updated/css/portal.css">
+<link rel="stylesheet" href="http://localhost/drivesphere_updated/css/global.css">
+</head>
+<body class="portal">
+<header class="p-nav">
+  <div class="p-wrap">
+    <a class="p-brand" href="http://localhost/drivesphere_updated/customer/dashboard.php">
+      <span class="p-brand-logo">
+        <img src="http://localhost/drivesphere_updated/images/DriveSphere_logo.jpg" alt="DriveSphere Logo">
+      </span>
+      <span class="p-brand-text">
+        <b>DriveSphere</b>
+        <small>CUSTOMER RENTAL</small>
+      </span>
+    </a>
+
+    <button class="p-burger" id="burger" aria-label="Menu" type="button"><i class="fa-solid fa-bars"></i></button>
+
+    <nav class="p-links" id="navLinks">
+      <a href="http://localhost/drivesphere_updated/customer/dashboard.php" class="">Dashboard</a>
+      <a href="http://localhost/drivesphere_updated/customer/browse.php" class="">Browse</a>
+      <a href="http://localhost/drivesphere_updated/customer/about.php" class="">About</a>
+      <a href="http://localhost/drivesphere_updated/customer/help.php" class="active">Help</a>
+    </nav>
+
+    <div class="p-acc">
+      <button class="p-acc-btn" id="accBtn" type="button" aria-expanded="false" aria-label="Customer Account Menu">
+        <span>Account</span>
+        <span class="av">
+                      <svg viewBox="0 0 32 32" fill="none" style="width:100%;height:100%;display:block;">
+              <circle cx="16" cy="16" r="16" fill="#0284c7"/>
+              <circle cx="16" cy="12" r="5.5" fill="#ffffff"/>
+              <path d="M6 28c0-5.523 4.477-10 10-10s10 4.477 10 10" fill="#ffffff"/>
+            </svg>
+                  </span>
+        <i class="fa-solid fa-chevron-down p-chevron" id="accChevron"></i>
+      </button>
+
+      <div class="p-menu" id="accMenu">
+        <div class="who">
+          <div class="who-avatar">
+                          <svg viewBox="0 0 40 40" fill="none" style="width:100%;height:100%;display:block;border-radius:50%;">
+                <circle cx="20" cy="20" r="20" fill="#e0f2fe"/>
+                <circle cx="20" cy="15" r="7" fill="#0284c7"/>
+                <path d="M7 36c0-7.18 5.82-13 13-13s13 5.82 13 13" fill="#0284c7"/>
+              </svg>
+                      </div>
+          <div class="who-info">
+            <b>Carlos Alvarez</b>
+            <span>carlos@drivesphere.ph</span>
+          </div>
+        </div>
+
+        <div class="p-menu-list">
+          <a href="http://localhost/drivesphere_updated/customer/settings.php" class="p-item">
+            <span class="p-item-left"><i class="fa-solid fa-gear"></i> Settings</span>
+          </a>
+          <a href="http://localhost/drivesphere_updated/customer/notifications.php" class="p-item">
+            <span class="p-item-left"><i class="fa-regular fa-bell"></i> Notifications</span>
+          </a>
+          <a href="http://localhost/drivesphere_updated/customer/history.php" class="p-item">
+            <span class="p-item-left"><i class="fa-solid fa-clock-rotate-left"></i> My Rental History</span>
+          </a>
+        </div>
+
+        <div class="p-menu-divider"></div>
+
+        <a class="out p-item" href="http://localhost/drivesphere_updated/actions/logout.php">
+          <span class="p-item-left"><i class="fa-solid fa-arrow-right-from-bracket"></i> Log Out</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+<main class="p-main p-main-fullwidth">
+<div class="container" style="padding-top: 14px;"></div>
+
+<!-- Help Hero Section (matching SCREEN P05) -->
+<section class="help-hero">
+    <div class="container text-center">
+        <h1 class="help-title">How Can We Help Your Journey Today?</h1>
+        <p class="help-subtitle">Find quick answers to rental policies, airport handovers, insurance coverage, and corporate booking solutions. Our operations dispatch team is on standby 24/7.</p>
+        
+        <div class="search-box-wrapper">
+            <form class="help-search-form" id="helpSearchForm" onsubmit="event.preventDefault(); filterFaqs(document.getElementById('faqSearchInput').value);">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="faqSearchInput" placeholder="Search questions, keywords (e.g., security deposit, airport pickup, chauffeur, cancellation...">
+                <button type="submit" class="btn btn-dark">Search FAQs <i class="fa-solid fa-arrow-right"></i></button>
+            </form>
+            <div class="popular-tags">
+                <span class="pop-label">POPULAR:</span>
+                <a href="http://localhost/drivesphere_updated/policies.php" class="pop-tag">Security Deposit Policy</a>
+                <a href="http://localhost/drivesphere_updated/customer/browse.php" class="pop-tag">NAIA Airport Delivery</a>
+                <a href="http://localhost/drivesphere_updated/policies.php" class="pop-tag">Driver License Requirements</a>
+                <a href="http://localhost/drivesphere_updated/policies.php" class="pop-tag">Accident Protocol</a>
+                <a href="http://localhost/drivesphere_updated/contact.php" class="pop-tag">Corporate Invoicing</a>
+            </div>
+        </div>
+
+        <!-- Info Stats Grid (3 cards matching SCREEN P05) -->
+        <div class="help-stats-grid">
+            <div class="h-stat-card">
+                <div class="h-icon"><i class="fa-solid fa-bolt"></i></div>
+                <div class="h-stat-info">
+                    <span>Live Dispatch Response</span>
+                    <strong>&lt; 1.8 mins <span class="highlight-blue">avg wait</span></strong>
+                </div>
+            </div>
+            <div class="h-stat-card">
+                <div class="h-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                <div class="h-stat-info">
+                    <span>Fleet Safety Verification</span>
+                    <strong>100% Insured <span class="highlight-green">CTPL &amp; CDW</span></strong>
+                </div>
+            </div>
+            <div class="h-stat-card">
+                <div class="h-icon"><i class="fa-solid fa-location-dot"></i></div>
+                <div class="h-stat-info">
+                    <span>Service Coverage Hubs</span>
+                    <strong>18 Terminals <span class="highlight-gray">Luzon, Visayas, Mindanao</span></strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section (matching SCREEN P05) -->
+<section class="faq-section">
+    <div class="container">
+        <!-- FAQ Categories -->
+        <div class="faq-categories">
+            <button class="faq-pill active" type="button" data-category="all">All Categories</button>
+            <button class="faq-pill" type="button" data-category="booking">Booking &amp; Reservations</button>
+            <button class="faq-pill" type="button" data-category="pickup">Vehicle Pick-up &amp; Return</button>
+            <button class="faq-pill" type="button" data-category="insurance">Insurance &amp; Damage Protection</button>
+            <button class="faq-pill" type="button" data-category="billing">Billing &amp; Payment</button>
+            <button class="faq-pill" type="button" data-category="chauffeur">Chauffeur Services</button>
+        </div>
+
+        <!-- Accordion Wrapper -->
+        <div class="faq-accordion-wrapper">
+            <!-- Q1 (Active by default per SCREEN P05) -->
+            <div class="accordion-item active" data-category="booking">
+                <div class="accordion-header" onclick="toggleFaq(this)">
+                    <div class="acc-title">
+                        <span class="q-num">01</span>
+                        <h3>What are the driver license and identification requirements to rent a vehicle?</h3>
+                    </div>
+                    <button class="toggle-icon" type="button" aria-label="Toggle answer"><i class="fa-solid fa-minus"></i></button>
+                </div>
+                <div class="accordion-body">
+                    <div class="acc-content-split">
+                        <div class="acc-text">
+                            <p>Renters must present a valid Philippine Professional or Non-Professional Driver's License (held for at least 1 year) or a valid Foreign Driver's License alongside a passport and international driving permit. Two government-issued IDs are required for primary account verification.</p>
+                        </div>
+                        <div class="acc-side-box">
+                            <i class="fa-solid fa-id-card"></i>
+                            <div>
+                                <strong>Accepted Primary IDs:</strong> Passport, UMID, Driver's License, SSS card, or PRC License.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q2 -->
+            <div class="accordion-item" data-category="billing">
+                <div class="accordion-header" onclick="toggleFaq(this)">
+                    <div class="acc-title">
+                        <span class="q-num">02</span>
+                        <h3>How does the security deposit work, and when is it refunded?</h3>
+                    </div>
+                    <button class="toggle-icon" type="button" aria-label="Toggle answer"><i class="fa-solid fa-plus"></i></button>
+                </div>
+                <div class="accordion-body">
+                    <div class="acc-content-split">
+                        <div class="acc-text">
+                            <p>Security deposits are held temporarily on your credit card and vary based on the vehicle category (₱5,000 for Sedans, ₱8,000 for SUVs, ₱12,000 for VIP Vans). They are automatically released within 3-5 business days upon a clean vehicle return inspection, assuming zero toll violations or damage.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q3 -->
+            <div class="accordion-item" data-category="pickup">
+                <div class="accordion-header" onclick="toggleFaq(this)">
+                    <div class="acc-title">
+                        <span class="q-num">03</span>
+                        <h3>Can I arrange for airport pick-up and drop-off at NAIA, Clark, or Cebu Mactan?</h3>
+                    </div>
+                    <button class="toggle-icon" type="button" aria-label="Toggle answer"><i class="fa-solid fa-plus"></i></button>
+                </div>
+                <div class="accordion-body">
+                    <div class="acc-content-split">
+                        <div class="acc-text">
+                            <p>Yes, DriveSphere coordinates white-glove curbside handover at NAIA Terminals 1, 2, 3, Clark International, and Mactan-Cebu. Simply input your flight number during reservation for synchronized terminal bay dispatch.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q4 -->
+            <div class="accordion-item" data-category="insurance">
+                <div class="accordion-header" onclick="toggleFaq(this)">
+                    <div class="acc-title">
+                        <span class="q-num">04</span>
+                        <h3>What collision damage coverage and insurance options are included in standard bookings?</h3>
+                    </div>
+                    <button class="toggle-icon" type="button" aria-label="Toggle answer"><i class="fa-solid fa-plus"></i></button>
+                </div>
+                <div class="accordion-body">
+                    <div class="acc-content-split">
+                        <div class="acc-text">
+                            <p>Every booking includes standard Compulsory Third-Party Liability (CTPL) and Collision Damage Waiver (CDW) with standard excess caps. You can upgrade to our Premium ₱0 Deductible Protection during checkout for complete indemnity.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Q5 -->
+            <div class="accordion-item" data-category="insurance">
+                <div class="accordion-header" onclick="toggleFaq(this)">
+                    <div class="acc-title">
+                        <span class="q-num">05</span>
+                        <h3>What should I do in the unlikely event of an accident or mechanical breakdown?</h3>
+                    </div>
+                    <button class="toggle-icon" type="button" aria-label="Toggle answer"><i class="fa-solid fa-plus"></i></button>
+                </div>
+                <div class="accordion-body">
+                    <div class="acc-content-split">
+                        <div class="acc-text">
+                            <p>Prioritize your safety and call our 24/7 emergency dispatch hotline immediately at (02) 8888-DRIVE. Our roadside response unit will coordinate traffic management, localized mechanics, and dispatch an instant replacement vehicle within 60 minutes in Metro Manila.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Bottom Action Cards (3 cards matching SCREEN P05) -->
+<section class="help-action-cards" style="padding-bottom: 80px;">
+    <div class="container action-grid">
+        <div class="action-card">
+            <div class="ac-icon"><i class="fa-solid fa-book-open"></i></div>
+            <h3>Browse Knowledge Base &amp; FAQs</h3>
+            <p>Read through our complete collection of user guides, driving manuals, and step-by-step vehicle booking documentation.</p>
+            <a href="http://localhost/drivesphere_updated/policies.php" class="btn-card-action">Open Knowledge Base <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+        <div class="action-card">
+            <div class="ac-icon"><i class="fa-solid fa-headset"></i></div>
+            <h3>Contact Direct Support</h3>
+            <p>Connect with our 24/7 reservation desk via live chat, call our hotline (02) 8888-DRIVE, or send an urgent ticket to support@drivesphere.ph.</p>
+            <a href="http://localhost/drivesphere_updated/contact.php" class="btn-card-action">Contact Support <i class="fa-regular fa-message"></i></a>
+        </div>
+        <div class="action-card">
+            <div class="ac-icon"><i class="fa-solid fa-file-invoice"></i></div>
+            <h3>Corporate &amp; Billing Support</h3>
+            <p>Assistance with enterprise agreements, BIR 2307 tax documentation, corporate invoicing, and long-term fleet bookings.</p>
+            <a href="http://localhost/drivesphere_updated/contact.php" class="btn-card-action">Contact Billing <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+    </div>
+</section>
+
+<script>
+function toggleFaq(header) {
+    const item = header.closest('.accordion-item');
+    const icon = item.querySelector('.toggle-icon i');
+    const isActive = item.classList.contains('active');
+    
+    item.classList.toggle('active');
+    if (icon) {
+        if (isActive) {
+            icon.className = 'fa-solid fa-plus';
+        } else {
+            icon.className = 'fa-solid fa-minus';
+        }
+    }
+}
+
+// Category pills filter
+document.querySelectorAll('.faq-pill').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.faq-pill').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const cat = this.getAttribute('data-category');
+        
+        document.querySelectorAll('.accordion-item').forEach(item => {
+            if (cat === 'all' || item.getAttribute('data-category') === cat) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+});
+
+// Search filter
+function filterFaqs(query) {
+    query = query.toLowerCase().trim();
+    document.querySelectorAll('.accordion-item').forEach(item => {
+        const text = item.textContent.toLowerCase();
+        if (!query || text.includes(query)) {
+            item.style.display = 'block';
+            if (query) {
+                item.classList.add('active');
+                const icon = item.querySelector('.toggle-icon i');
+                if (icon) icon.className = 'fa-solid fa-minus';
+            }
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+</script>
+
+</main>
+
+<footer class="p-foot">
+  <div class="p-wrap">
+    <div class="p-foot-grid">
+      <!-- Left: Logo & Tagline -->
+      <div class="p-foot-brand">
+        <a href="http://localhost/drivesphere_updated/customer/dashboard.php" class="p-foot-logo">
+          <span class="p-foot-logo-box">
+            <img src="http://localhost/drivesphere_updated/images/DriveSphere_logo.jpg" alt="DriveSphere Logo">
+          </span>
+          <span class="p-foot-logo-text">DriveSphere</span>
+        </a>
+        <p class="p-foot-desc">Your Premier Philippine Vehicle Rental &amp; Smart Fleet Management Platform</p>
+      </div>
+
+      <!-- Links 1: About Us -->
+      <div class="p-foot-col">
+        <h4>ABOUT US</h4>
+        <a href="http://localhost/drivesphere_updated/customer/about.php">Our Story</a>
+        <a href="http://localhost/drivesphere_updated/customer/about.php">Fleet Network</a>
+      </div>
+
+      <!-- Links 2: Legal & Compliance -->
+      <div class="p-foot-col">
+        <h4>LEGAL &amp; COMPLIANCE</h4>
+        <a href="http://localhost/drivesphere_updated/policies.php">Privacy Policy</a>
+      </div>
+
+      <!-- Links 3: Get Help -->
+      <div class="p-foot-col">
+        <h4>GET HELP</h4>
+        <a href="http://localhost/drivesphere_updated/customer/help.php">FAQs</a>
+        <a href="http://localhost/drivesphere_updated/customer/help.php">Booking Support</a>
+      </div>
+    </div>
+
+    <!-- Contact Details Bar -->
+    <div class="p-foot-contact-bar">
+      <div class="p-contact-item">
+        <i class="fa-solid fa-phone"></i>
+        <span>24/7 Hotline: <strong>(02) 8888-DRIVE</strong></span>
+      </div>
+      <div class="p-contact-item">
+        <i class="fa-regular fa-envelope"></i>
+        <span>support@drivesphere.ph</span>
+      </div>
+      <div class="p-contact-item">
+        <i class="fa-solid fa-location-dot"></i>
+        <span>BGC, Taguig City, Philippines</span>
+      </div>
+    </div>
+
+    <!-- Bottom Copyright -->
+    <div class="p-foot-bot">
+      <span>&copy; 2026 DriveSphere Philippines Inc. All rights reserved.</span>
+    </div>
+  </div>
+</footer>
+
+<div class="modal-backdrop" id="filterModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="filterModalTitle">
+  <div class="filter-dialog">
+    <div class="filter-modal-head">
+      <h3 class="filter-modal-title" id="filterModalTitle">
+        <i class="fa-solid fa-sliders"></i> Filter
+      </h3>
+      <button class="filter-close-x" id="closeFilterModal" type="button" aria-label="Close Filter">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <form method="get" action="http://localhost/drivesphere_updated/customer/dashboard.php" id="filterModalForm">
+      <div class="filter-modal-body">
+        <!-- 1. Vehicle Type -->
+        <div>
+          <label class="filter-group-lbl">Vehicle Type</label>
+          <div class="pill-options-grid" id="typePills">
+            <button type="button" class="filter-pill active-blue" data-type="all">All</button>
+            <button type="button" class="filter-pill" data-type="sedan">Sedan</button>
+            <button type="button" class="filter-pill" data-type="suv">SUV</button>
+            <button type="button" class="filter-pill" data-type="van">MPV / Van</button>
+            <button type="button" class="filter-pill" data-type="crossover">Crossover</button>
+            <button type="button" class="filter-pill" data-type="pickup">Pickup</button>
+          </div>
+          <input type="hidden" name="type" id="filterTypeInput" value="all">
+        </div>
+
+        <!-- 2. Transmission -->
+        <div>
+          <label class="filter-group-lbl">Transmission</label>
+          <div class="pill-options-grid" id="transPills" style="grid-template-columns: repeat(3, 1fr);">
+            <button type="button" class="filter-pill active-navy" data-trans="all">All</button>
+            <button type="button" class="filter-pill" data-trans="Automatic">Automatic</button>
+            <button type="button" class="filter-pill" data-trans="Manual">Manual</button>
+          </div>
+          <input type="hidden" name="transmission" id="filterTransInput" value="all">
+        </div>
+
+        <!-- 3. Price Range -->
+        <div>
+          <div class="filter-group-lbl">
+            <span>Price Range</span>
+            <small>Per Day (PHP)</small>
+          </div>
+          <div class="price-inputs-row">
+            <div class="price-input-box">
+              <span class="price-box-lbl">Min Price</span>
+              <select name="min_price" id="filterMinPrice">
+                <option value="1000">₱ 1,000</option>
+                <option value="1500" selected>₱ 1,500</option>
+                <option value="2000">₱ 2,000</option>
+                <option value="3000">₱ 3,000</option>
+                <option value="4000">₱ 4,000</option>
+              </select>
+            </div>
+            <div class="price-input-box">
+              <span class="price-box-lbl">Max Price</span>
+              <select name="max_price" id="filterMaxPrice">
+                <option value="3500">₱ 3,500</option>
+                <option value="5000">₱ 5,000</option>
+                <option value="6000" selected>₱ 6,000</option>
+                <option value="8000">₱ 8,000</option>
+                <option value="10000">₱ 10,000+</option>
+              </select>
+            </div>
+          </div>
+          <div class="range-slider-wrap">
+            <div class="range-bar-track">
+              <div class="range-bar-fill" id="sliderFill"></div>
+            </div>
+            <div class="range-endpoints">
+              <span>₱1,000</span>
+              <span>₱3,500</span>
+              <span>₱10,000+</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Brand -->
+        <div>
+          <label class="filter-group-lbl">Brand</label>
+          <div class="brand-select-box">
+            <select name="brand" id="filterBrand">
+              <option value="all">All Brands (Toyota, Honda, Mitsubishi, Ford...)</option>
+              <option value="Toyota">Toyota</option>
+              <option value="Honda">Honda</option>
+              <option value="Mitsubishi">Mitsubishi</option>
+              <option value="Ford">Ford</option>
+              <option value="Mazda">Mazda</option>
+              <option value="Hyundai">Hyundai</option>
+            </select>
+            <i class="fa-solid fa-chevron-down select-chevron"></i>
+          </div>
+        </div>
+
+        <!-- 5. Actions -->
+        <div>
+          <button type="submit" class="btn-apply-filters">
+            <i class="fa-solid fa-check"></i> Apply Filters
+          </button>
+          <button type="button" class="btn-reset-filters" id="resetFiltersBtn">
+            Reset All Filters
+          </button>
+        </div>
+      </div>
+
+      <div class="filter-modal-foot">
+        <div>
+          <span class="status-dot-green"></span> Filtering across 42 Fleet Hubs
+        </div>
+        <div>
+          DriveSphere v2.4
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="http://localhost/drivesphere_updated/js/portal.js"></script>
+</body>
+</html>

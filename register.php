@@ -19,13 +19,13 @@ if (is_customer()) { redirect($redirectTarget); }
     <!-- Registration Header -->
     <header class="login-header">
         <div class="container lh-container">
-            <div class="logo">
+            <a href="<?= BASE_URL ?>index.php" class="logo" style="text-decoration:none; color:inherit;">
                 <img src="images/DriveSphere_logo.jpg" alt="DriveSphere Logo">
                 <div class="logo-text">
                     <span>DriveSphere</span>
                     <small>PHILIPPINE MOBILITY & FLEET</small>
                 </div>
-            </div>
+            </a>
             <div class="lh-links reg-header-right">
                 <a href="<?= BASE_URL ?>login.php<?= $redirectTarget !== 'customer/dashboard.php' ? '?redirect=' . urlencode($redirectTarget) : '' ?>" class="reg-prompt" style="text-decoration: none; color: var(--primary-blue); font-weight: 600; transition: 0.2s;">
                     Already have an account?
@@ -128,8 +128,8 @@ if (is_customer()) { redirect($redirectTarget); }
                     <div class="info-feature">
                         <div class="feat-icon"><i class="fa-solid fa-check"></i></div>
                         <div class="feat-text">
-                            <strong>24/7 Roadside Assistance:</strong>
-                            <span>Instant mechanical replacement guarantee within 60 minutes.</span>
+                            <strong>24/7 Customer Support:</strong>
+                            <span>Instant customer assistance and concierge dispatch anytime.</span>
                         </div>
                     </div>
                 </div>

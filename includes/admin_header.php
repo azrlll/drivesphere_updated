@@ -15,7 +15,7 @@ $A = BASE_URL . 'admin/';
 <title><?= e($pageTitle ?? 'Admin') ?> - DriveSphere Admin</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="<?= BASE_URL ?>css/portal.css">
+<link rel="stylesheet" href="<?= BASE_URL ?>css/portal.css?v=<?= filemtime(__DIR__ . '/../css/portal.css') ?>">
 </head>
 <body class="portal">
 <header class="p-nav"><div class="p-wrap">
@@ -28,7 +28,13 @@ $A = BASE_URL . 'admin/';
     <a href="<?= $A ?>rentals.php" class="<?= $nav === 'rentals' ? 'active' : '' ?>">Rentals</a>
   </nav>
   <div class="p-acc">
-    <button class="p-acc-btn" id="accBtn" type="button"><?= e(admin_user_name()) ?> <span class="av"><?= e(strtoupper(substr(admin_user_name(), 0, 1))) ?></span></button>
+    <button class="p-acc-btn p-acc-enterprise-btn" id="accBtn" type="button">
+      <span class="av"><i class="fa-solid fa-user" style="font-size:12px;color:#0d1b2e;"></i></span>
+      <span class="p-acc-text-wrap">
+        <span class="p-acc-name"><?= e(admin_user_name() === 'Fleet Administrator' ? 'Admin Officer' : admin_user_name()) ?> <i class="fa-solid fa-chevron-down" style="font-size:9px;margin-left:2px;opacity:0.8;"></i></span>
+        <span class="p-acc-sub">Merchant Ops</span>
+      </span>
+    </button>
     <div class="p-menu" id="accMenu">
       <div class="who"><b><?= e(admin_user_name()) ?></b><span><?= e(admin_user_email()) ?> &middot; Administrator</span></div>
       <a href="<?= $A ?>settings.php"><span><i class="fa-solid fa-gear"></i> Settings</span></a>

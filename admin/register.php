@@ -180,7 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="info-badge" style="background: rgba(255,255,255,0.1); border: none; color: #cbd5e1; font-size: 10px; letter-spacing: 0.5px;"><i class="fa-solid fa-network-wired"></i> ENTERPRISE FLEET NETWORK • COMMAND TIER</div>
                 
                 <h2 style="font-size: 32px;">Full-Spectrum Fleet Intelligence</h2>
-                <p>Empower your transport organization with real-time OBD-II telemetry, automated dispatch routing, LTFRB compliance logs, and instant roadside immobilization.</p>
+                <p>Empower your transport organization with real-time OBD-II telemetry, automated dispatch routing, LTFRB compliance logs, and instant remote immobilization.</p>
                 
                 <div class="info-feature-list" style="gap: 20px; margin-bottom: 32px;">
                     <div class="info-feature">
@@ -265,9 +265,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="container ef-bottom-container">
                 <div>© 2026 DriveSphere Philippines Inc. All rights reserved. Registered Enterprise Fleet Portal.</div>
                 <div class="ef-links">
-                    Privacy Policy
-                    Security Protocol
-                    Help Center
+                    <a href="<?= BASE_URL ?>policies.php" style="color:inherit;text-decoration:none;">Privacy Policy</a>
+                    <a href="<?= BASE_URL ?>policies.php#article-4" style="color:inherit;text-decoration:none;">Security Protocol</a>
+                    <a href="<?= BASE_URL ?>help.php" style="color:inherit;text-decoration:none;">Help Center</a>
                 </div>
             </div>
         </div>

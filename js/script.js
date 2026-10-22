@@ -22,35 +22,43 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Elements to reveal with stagger on scroll
+    // Elements to reveal with stagger on scroll (exclude primary vehicle cards so they are immediately visible)
     const animatedSelectors = [
-        '.hero-content h1', '.hero-content p', '.hero-buttons', '.hero-widget',
         '.section-title', '.section-subtitle', '.section-header',
-        '.fleet-card', '.stat-card', '.a-stat-card', '.value-box', 
+        '.stat-card', '.a-stat-card', '.value-box', 
         '.split-row', '.pillar-card', '.eco-card', '.support-card', 
         '.action-card', '.info-card', '.timeline-row', '.t-feature-card',
-        '.p-item', '.p-grid-item', '.policy-intro-banner', 
-        '.review-card', '.aggregate-dashboard'
+        '.p-item', '.p-grid-item', '.policy-intro-banner'
     ];
 
     const elementsToReveal = document.querySelectorAll(animatedSelectors.join(', '));
-    elementsToReveal.forEach(el => el.classList.add('reveal-up'));
+    elementsToReveal.forEach(el => {
+        const rect = el.getBoundingClientRect();
+        // Only hide elements that are genuinely below the initial viewport
+        if (rect.top >= window.innerHeight - 30) {
+            el.classList.add('reveal-up');
+        }
+    });
 
     const revealObserver = new IntersectionObserver((entries, observer) => {
         const intersectingEntries = entries.filter(entry => entry.isIntersecting);
         intersectingEntries.forEach((entry, index) => {
             setTimeout(() => {
                 entry.target.classList.add('is-visible');
-            }, index * 100); 
+            }, index * 80); 
             observer.unobserve(entry.target);
         });
     }, { 
         root: null, 
-        rootMargin: '0px 0px -50px 0px', 
-        threshold: 0.1 
+        rootMargin: '50px 0px', 
+        threshold: 0.05 
     });
 
-    elementsToReveal.forEach(el => revealObserver.observe(el));
+    elementsToReveal.forEach(el => {
+        if (el.classList.contains('reveal-up')) {
+            revealObserver.observe(el);
+        }
+    });
 
 
     /* ==========================================================================
@@ -69,19 +77,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (shouldShow) {
                 accountDropdown.classList.add('show');
                 accountTrigger.classList.add('active');
+                accountTrigger.setAttribute('aria-expanded', 'true');
             } else {
                 accountDropdown.classList.remove('show');
                 accountTrigger.classList.remove('active');
-            }
-
-            // Toggle Chevron Icon Direction
-            const chevron = accountTrigger.querySelector('.chevron-icon');
-            if (chevron) {
-                if (shouldShow) {
-                    chevron.classList.replace('fa-chevron-down', 'fa-chevron-up');
-                } else {
-                    chevron.classList.replace('fa-chevron-up', 'fa-chevron-down');
-                }
+                accountTrigger.setAttribute('aria-expanded', 'false');
             }
         };
 
@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleDropdown();
         });
 
-        // Close Button Listener (Inside Modal)
+        // Close Button Listener (Inside Modal if present)
         if (closeDropdown) {
             closeDropdown.addEventListener('click', (e) => {
                 e.preventDefault();

@@ -1,4 +1,6 @@
+<?php if (empty($fullWidth)): ?>
 </div><!-- /.p-wrap -->
+<?php endif; ?>
 </main>
 
 <footer class="p-foot">
@@ -6,7 +8,7 @@
     <div class="p-foot-grid">
       <!-- Left: Logo & Tagline -->
       <div class="p-foot-brand">
-        <a href="<?= BASE_URL ?>index.php" class="p-foot-logo">
+        <a href="<?= BASE_URL ?>customer/dashboard.php" class="p-foot-logo">
           <span class="p-foot-logo-box">
             <img src="<?= BASE_URL ?>images/DriveSphere_logo.jpg" alt="DriveSphere Logo">
           </span>
@@ -19,24 +21,20 @@
       <div class="p-foot-col">
         <h4>ABOUT US</h4>
         <a href="<?= BASE_URL ?>customer/about.php">Our Story</a>
-        <a href="<?= BASE_URL ?>customer/about.php">Fleet Network</a>
-        <a href="<?= BASE_URL ?>customer/about.php">Careers</a>
-        <a href="<?= BASE_URL ?>customer/about.php">Press</a>
+        <a href="<?= BASE_URL ?>customer/browse.php">Fleet Network</a>
       </div>
 
       <!-- Links 2: Legal & Compliance -->
       <div class="p-foot-col">
         <h4>LEGAL &amp; COMPLIANCE</h4>
-        <a href="<?= BASE_URL ?>policies.php">Terms of Service</a>
-        <a href="<?= BASE_URL ?>policies.php">Privacy Policy</a>
+        <a href="<?= BASE_URL ?>customer/policies.php">Privacy Policy</a>
       </div>
 
       <!-- Links 3: Get Help -->
       <div class="p-foot-col">
         <h4>GET HELP</h4>
         <a href="<?= BASE_URL ?>customer/help.php">FAQs</a>
-        <a href="<?= BASE_URL ?>customer/help.php">24/7 Roadside Assistance</a>
-        <a href="<?= BASE_URL ?>customer/help.php">Booking Support</a>
+        <a href="<?= BASE_URL ?>customer/contact.php">Booking Support</a>
       </div>
     </div>
 
@@ -65,6 +63,6 @@
 
 <?php include __DIR__ . '/filter_modal.php'; ?>
 
-<script src="<?= BASE_URL ?>js/portal.js"></script>
+<script src="<?= BASE_URL ?>js/portal.js?v=<?= filemtime(__DIR__ . '/../js/portal.js') ?>"></script>
 </body>
 </html>

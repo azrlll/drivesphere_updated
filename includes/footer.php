@@ -17,14 +17,11 @@
             <ul>
                 <li><a href="<?= BASE_URL ?>about.php">Our Story</a></li>
                 <li><a href="<?= BASE_URL ?>fleet.php">Fleet Network</a></li>
-                <li><a href="<?= BASE_URL ?>about.php">Careers</a></li>
-                <li><a href="<?= BASE_URL ?>reviews.php">Press</a></li>
             </ul>
         </div>
         <div class="footer-col">
             <h4>LEGAL &amp; COMPLIANCE</h4>
             <ul>
-                <li><a href="<?= BASE_URL ?>policies.php">Terms of Service</a></li>
                 <li><a href="<?= BASE_URL ?>policies.php">Privacy Policy</a></li>
             </ul>
         </div>
@@ -32,7 +29,6 @@
             <h4>GET HELP</h4>
             <ul>
                 <li><a href="<?= BASE_URL ?>help.php">FAQs</a></li>
-                <li><a href="<?= BASE_URL ?>help.php">24/7 Roadside Assistance</a></li>
                 <li><a href="<?= BASE_URL ?>contact.php">Booking Support</a></li>
             </ul>
         </div>

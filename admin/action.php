@@ -59,6 +59,28 @@ switch ($op) {
         }
         break;
 
+    case 'toggle_post':
+        $st = $pdo->prepare("SELECT is_posted, make, model FROM vehicles WHERE id=?");
+        $st->execute([$id]);
+        $veh = $st->fetch();
+        if ($veh) {
+            $newVal = $veh['is_posted'] ? 0 : 1;
+            $pdo->prepare("UPDATE vehicles SET is_posted=? WHERE id=?")->execute([$newVal, $id]);
+            if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'ok' => true, 
+                    'is_posted' => $newVal,
+                    'label' => $newVal ? 'Posted' : 'Not Posted',
+                    'btn_text' => $newVal ? 'Unpost' : 'Post Now',
+                    'message' => 'Vehicle ' . ($newVal ? 'published to live catalog.' : 'unposted from catalog.')
+                ]);
+                exit;
+            }
+            flash_set('success', 'Vehicle ' . ($newVal ? 'published to live catalog.' : 'unposted from catalog.'));
+        }
+        break;
+
     case 'vehicle_status':
         $status = $_POST['status'] ?? '';
         if (in_array($status, ['available', 'maintenance'], true)) {
@@ -80,7 +102,42 @@ switch ($op) {
 
     case 'mark_read':
         $pdo->exec("UPDATE notifications SET is_read=1 WHERE audience='admin'");
+        if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+            header('Content-Type: application/json');
+            echo json_encode(['ok' => true]);
+            exit;
+        }
         flash_set('success', 'All notifications marked as read.');
+        break;
+
+    case 'notif_toggle':
+        $nid = (int)($_POST['id'] ?? 0);
+        $st = $pdo->prepare("SELECT is_read FROM notifications WHERE id=? AND audience='admin'");
+        $st->execute([$nid]);
+        $curr = $st->fetchColumn();
+        if ($curr !== false) {
+            $newVal = $curr ? 0 : 1;
+            $pdo->prepare("UPDATE notifications SET is_read=? WHERE id=? AND audience='admin'")->execute([$newVal, $nid]);
+            if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+                header('Content-Type: application/json');
+                echo json_encode(['ok' => true, 'id' => $nid, 'is_read' => $newVal]);
+                exit;
+            }
+            flash_set('success', $newVal ? 'Notification marked as read.' : 'Notification marked as unread.');
+        }
+        break;
+
+    case 'notif_dismiss':
+        $nid = (int)($_POST['id'] ?? 0);
+        if ($nid > 0) {
+            $pdo->prepare("UPDATE notifications SET is_read=1 WHERE id=? AND audience='admin'")->execute([$nid]);
+            if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+                header('Content-Type: application/json');
+                echo json_encode(['ok' => true, 'id' => $nid]);
+                exit;
+            }
+            flash_set('success', 'Notification dismissed.');
+        }
         break;
 
     default:

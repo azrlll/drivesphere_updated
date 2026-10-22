@@ -1,0 +1,2722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><base href="http://localhost/drivesphere_updated/customer/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customer Dashboard - DriveSphere</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="http://localhost/drivesphere_updated/css/portal.css">
+</head>
+<body class="portal">
+<header class="p-nav">
+  <div class="p-wrap">
+    <a class="p-brand" href="http://localhost/drivesphere_updated/customer/dashboard.php">
+      <span class="p-brand-logo">
+        <img src="http://localhost/drivesphere_updated/images/DriveSphere_logo.jpg" alt="DriveSphere Logo">
+      </span>
+      <span class="p-brand-text">
+        <b>DriveSphere</b>
+        <small>CUSTOMER RENTAL</small>
+      </span>
+    </a>
+
+    <button class="p-burger" id="burger" aria-label="Menu" type="button"><i class="fa-solid fa-bars"></i></button>
+
+    <nav class="p-links" id="navLinks">
+      <a href="http://localhost/drivesphere_updated/customer/dashboard.php" class="active">Dashboard</a>
+      <a href="http://localhost/drivesphere_updated/customer/browse.php" class="">Browse</a>
+      <a href="http://localhost/drivesphere_updated/customer/about.php" class="">About</a>
+      <a href="http://localhost/drivesphere_updated/customer/help.php" class="">Help</a>
+    </nav>
+
+    <div class="p-acc">
+      <button class="p-acc-btn" id="accBtn" type="button" aria-expanded="false" aria-label="Customer Account Menu">
+        <span>Account</span>
+        <span class="av">
+                      <svg viewBox="0 0 32 32" fill="none" style="width:100%;height:100%;display:block;">
+              <circle cx="16" cy="16" r="16" fill="#0284c7"/>
+              <circle cx="16" cy="12" r="5.5" fill="#ffffff"/>
+              <path d="M6 28c0-5.523 4.477-10 10-10s10 4.477 10 10" fill="#ffffff"/>
+            </svg>
+                  </span>
+        <i class="fa-solid fa-chevron-down p-chevron" id="accChevron"></i>
+      </button>
+
+      <div class="p-menu" id="accMenu">
+        <div class="who">
+          <div class="who-avatar">
+                          <svg viewBox="0 0 40 40" fill="none" style="width:100%;height:100%;display:block;border-radius:50%;">
+                <circle cx="20" cy="20" r="20" fill="#e0f2fe"/>
+                <circle cx="20" cy="15" r="7" fill="#0284c7"/>
+                <path d="M7 36c0-7.18 5.82-13 13-13s13 5.82 13 13" fill="#0284c7"/>
+              </svg>
+                      </div>
+          <div class="who-info">
+            <b>Carlos Alvarez</b>
+            <span>carlos@drivesphere.ph</span>
+          </div>
+        </div>
+
+        <div class="p-menu-list">
+          <a href="http://localhost/drivesphere_updated/customer/settings.php" class="p-item">
+            <span class="p-item-left"><i class="fa-solid fa-gear"></i> Settings</span>
+          </a>
+          <a href="http://localhost/drivesphere_updated/customer/notifications.php" class="p-item">
+            <span class="p-item-left"><i class="fa-regular fa-bell"></i> Notifications</span>
+          </a>
+          <a href="http://localhost/drivesphere_updated/customer/history.php" class="p-item">
+            <span class="p-item-left"><i class="fa-solid fa-clock-rotate-left"></i> My Rental History</span>
+          </a>
+        </div>
+
+        <div class="p-menu-divider"></div>
+
+        <a class="out p-item" href="http://localhost/drivesphere_updated/actions/logout.php">
+          <span class="p-item-left"><i class="fa-solid fa-arrow-right-from-bracket"></i> Log Out</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+<main class="p-main">
+<div class="p-wrap">
+
+<!-- Preload 3D Fleet Model & Draco Decoder for Instant Rendering -->
+<link rel="preload" href="http://localhost/drivesphere_updated/assets/car.glb" as="fetch" crossorigin>
+<link rel="preload" href="http://localhost/drivesphere_updated/js/draco/draco_decoder.wasm" as="fetch" crossorigin>
+
+<!-- ==========================================================================
+     1. FLOATING SEARCH & FILTER BAR
+     ========================================================================== -->
+<form method="get" action="dashboard.php" class="browse-search-bar" id="browseSearchForm">
+    <div class="search-input-wrap">
+        <i class="fa-solid fa-magnifying-glass" style="color: #94a3b8;"></i>
+        <input type="text" name="q" id="browseSearchInput" value="" placeholder="Search by model, brand, or location..." autocomplete="off">
+    </div>
+
+    <div class="location-chip" id="locationSelector" title="Selected Pickup Hub">
+        <i class="fa-solid fa-location-dot" style="color: #64748b;"></i>
+        <span>Metro Manila - BGC Hub (Active)</span>
+        <i class="fa-solid fa-chevron-down" style="font-size: 11px; margin-left: 2px;"></i>
+    </div>
+
+    <div class="filter-chip-btn" id="filterToggleBtn" title="Active Filter Criteria">
+        <i class="fa-solid fa-sliders"></i>
+        <span>Filter</span>
+        <span class="filter-badge">1</span>
+    </div>
+
+    <button type="submit" class="btn-find-vehicles">
+        Find Vehicles
+    </button>
+</form>
+
+<!-- ==========================================================================
+     2. DRIVESPHERE ASSURANCE GUARANTEE HERO BANNER
+     ========================================================================== -->
+<section class="assurance-hero">
+    <div class="assurance-left">
+        <div class="assurance-pill">
+            <i class="fa-solid fa-shield-halved"></i> DRIVESPHERE ASSURANCE GUARANTEE
+        </div>
+        <h1 class="assurance-title">
+            Premium Car Rental In<br>Metro Manila
+        </h1>
+        <p class="assurance-desc">
+            Immediate dispatch, 100% sanitized vehicles, and transparent daily rates with zero deposit hassle for verified members.
+        </p>
+        <div class="assurance-perks">
+            <span class="perk-item">
+                <i class="fa-solid fa-shield-halved"></i> Comprehensive Insurance
+            </span>
+            <span class="perk-item">
+                <i class="fa-solid fa-infinity"></i> Unlimited Mileage Options
+            </span>
+            <span class="perk-item">
+                <i class="fa-solid fa-headset"></i> 24/7 Concierge Support
+            </span>
+        </div>
+    </div>
+
+    <div class="assurance-right">
+        <div class="hero-diag-card" id="fleet360Card">
+            <div class="fleet-360-stage" id="fleet360Stage">
+                <div class="fleet-loading-overlay" id="fleetLoadingOverlay">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i> &nbsp; Initializing 3D Fleet Radar...
+                </div>
+                <canvas id="webglFleetCanvas"></canvas>
+
+                <div class="fleet-hud-tag">
+                    <span class="live-fleet-dot"></span> LIVE FLEET 360&deg; TELEMETRY
+                </div>
+
+                <div class="fleet-hud-angle" id="fleetBearingAngle">
+                    BEARING: 0&deg;
+                </div>
+
+                <div class="fleet-hud-stats">
+                    <span>30/30 ACTIVE</span> &bull; METRO MANILA RADAR
+                </div>
+
+                <div class="live-fleet-badge">
+                    <span class="live-fleet-dot"></span> Live Fleet View <span class="badge-360-pill">360&deg;</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==========================================================================
+     3. LIVE INVENTORY SECTION HEADER
+     ========================================================================== -->
+<div class="live-inventory-header">
+    <span class="tag-live">LIVE INVENTORY</span>
+    <h2 class="title-live">Get Our Rental Cars</h2>
+    <p class="desc-live">Select from our well-maintained fleet available for immediate booking.</p>
+</div>
+
+<!-- ==========================================================================
+     4. CATEGORY VEHICLE ROWS (Sedans, Hatchbacks, SUVs, MPVs, Vans, Pickups)
+     ========================================================================== -->
+        <section class="category-row" id="cat-sedan">
+        <div class="category-header">
+            <div class="cat-title-group">
+                <div class="cat-icon-sq">
+                    <i class="fa-solid fa-car-side"></i>
+                </div>
+                <div>
+                    <h3 class="cat-name">Sedan &amp; Compact</h3>
+                    <p class="cat-sub">Agile, fuel-efficient daily city commuters and luxury executive sedans</p>
+                </div>
+            </div>
+
+            <!-- Category Pagination Controls matching Mockup (< 1/2 >) -->
+            <div class="cat-pagination" data-cat="sedan" data-page="1" data-total="2">
+                <button class="cat-page-btn btn-cat-prev" type="button" aria-label="Previous Page in Sedan &amp; Compact" disabled><i class="fa-solid fa-chevron-left"></i></button>
+                <span class="cat-page-num"><span class="cat-curr-page">1</span> / <span class="cat-total-page">2</span></span>
+                <button class="cat-page-btn btn-cat-next" type="button" aria-label="Next Page in Sedan &amp; Compact" ><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+        </div>
+
+        <div class="vehicle-grid-3" id="grid-sedan">
+                                            <div class="v-card-exact" data-card-cat="sedan" data-card-page="1" style="">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=11" class="v-card-media" title="View details of Suzuki Dzire GL+ AGS">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/suzuki-dzire.jpg" alt="Suzuki Dzire GL+ AGS" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">Efficient Subcompact</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=11">Suzuki Dzire GL+ AGS</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: Sedan • 2023</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">5 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Gasoline</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱1,500</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=11" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                            <div class="v-card-exact" data-card-cat="sedan" data-card-page="1" style="">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=9" class="v-card-media" title="View details of Mitsubishi Mirage G4 GLS">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/mitsubishi-mirage-g4.jpg" alt="Mitsubishi Mirage G4 GLS" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">Compact City Sedan</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=9">Mitsubishi Mirage G4 GLS</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: Sedan • 2023</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">5 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Gasoline</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱1,600</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=9" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                            <div class="v-card-exact" data-card-cat="sedan" data-card-page="1" style="">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=8" class="v-card-media" title="View details of Toyota Vios 1.5 G">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/toyota-vios.jpg" alt="Toyota Vios 1.5 G" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">City Economy Sedan</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=8">Toyota Vios 1.5 G</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: Sedan • 2024</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">5 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Gasoline</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱1,800</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=8" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                            <div class="v-card-exact" data-card-cat="sedan" data-card-page="2" style="display: none;">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=12" class="v-card-media" title="View details of Hyundai Accent 1.6 CRDi">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/hyundai-accent.jpg" alt="Hyundai Accent 1.6 CRDi" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">Diesel Commuter Sedan</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=12">Hyundai Accent 1.6 CRDi</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: Sedan • 2022</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">5 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Diesel</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱1,900</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=12" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                            <div class="v-card-exact" data-card-cat="sedan" data-card-page="2" style="display: none;">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=10" class="v-card-media" title="View details of Nissan Almera 1.0 VL Turbo">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/nissan-almera.jpg" alt="Nissan Almera 1.0 VL Turbo" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">Turbocharged Sedan</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=10">Nissan Almera 1.0 VL Turbo</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: Sedan • 2024</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">5 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Gasoline</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱2,000</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=10" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                            <div class="v-card-exact" data-card-cat="sedan" data-card-page="2" style="display: none;">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=2" class="v-card-media" title="View details of Honda City 1.5 RS">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/honda-city.jpg" alt="Honda City 1.5 RS" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">Executive Sport Sedan</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=2">Honda City 1.5 RS</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: Sedan • 2024</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">5 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Gasoline</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱2,200</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=2" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                    </div>
+    </section>
+        <section class="category-row" id="cat-hatchback">
+        <div class="category-header">
+            <div class="cat-title-group">
+                <div class="cat-icon-sq">
+                    <i class="fa-solid fa-car"></i>
+                </div>
+                <div>
+                    <h3 class="cat-name">Hatchbacks &amp; City Cars</h3>
+                    <p class="cat-sub">Compact 5-door urban runabouts with exceptional fuel mileage and tight parking ease</p>
+                </div>
+            </div>
+
+            <!-- Category Pagination Controls matching Mockup (< 1/2 >) -->
+            <div class="cat-pagination" data-cat="hatchback" data-page="1" data-total="2">
+                <button class="cat-page-btn btn-cat-prev" type="button" aria-label="Previous Page in Hatchbacks &amp; City Cars" disabled><i class="fa-solid fa-chevron-left"></i></button>
+                <span class="cat-page-num"><span class="cat-curr-page">1</span> / <span class="cat-total-page">2</span></span>
+                <button class="cat-page-btn btn-cat-next" type="button" aria-label="Next Page in Hatchbacks &amp; City Cars" ><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+        </div>
+
+        <div class="vehicle-grid-3" id="grid-hatchback">
+                                            <div class="v-card-exact" data-card-cat="hatchback" data-card-page="1" style="">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=16" class="v-card-media" title="View details of Suzuki S-Presso GL AGS">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/suzuki-s-presso.jpg" alt="Suzuki S-Presso GL AGS" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">Mini Crossover Hatch</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=16">Suzuki S-Presso GL AGS</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: Hatchback • 2023</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">5 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Gasoline</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱1,200</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=16" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                            <div class="v-card-exact" data-card-cat="hatchback" data-card-page="1" style="">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=14" class="v-card-media" title="View details of Mitsubishi Mirage GLX">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/mitsubishi-mirage.jpg" alt="Mitsubishi Mirage GLX" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">Fuel-Saver Hatch</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=14">Mitsubishi Mirage GLX</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: Hatchback • 2023</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">5 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Gasoline</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱1,350</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=14" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                            <div class="v-card-exact" data-card-cat="hatchback" data-card-page="1" style="">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=13" class="v-card-media" title="View details of Toyota Wigo 1.0 G">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/toyota-wigo.jpg" alt="Toyota Wigo 1.0 G" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">Urban Micro Hatch</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=13">Toyota Wigo 1.0 G</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: Hatchback • 2024</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">5 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Gasoline</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱1,400</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=13" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                            <div class="v-card-exact" data-card-cat="hatchback" data-card-page="2" style="display: none;">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=5" class="v-card-media" title="View details of Suzuki Swift 1.2 GL">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/suzuki-swift.jpg" alt="Suzuki Swift 1.2 GL" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">Sport Compact Hatch</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=5">Suzuki Swift 1.2 GL</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: Hatchback • 2024</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">5 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Gasoline</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱1,700</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=5" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                            <div class="v-card-exact" data-card-cat="hatchback" data-card-page="2" style="display: none;">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=15" class="v-card-media" title="View details of Honda Brio 1.2 RS Black Top">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/honda-brio.jpg" alt="Honda Brio 1.2 RS Black Top" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">Sport City Hatch</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=15">Honda Brio 1.2 RS Black Top</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: Hatchback • 2024</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">5 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Gasoline</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱1,750</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=15" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                    </div>
+    </section>
+        <section class="category-row" id="cat-suv">
+        <div class="category-header">
+            <div class="cat-title-group">
+                <div class="cat-icon-sq">
+                    <i class="fa-solid fa-truck-monster"></i>
+                </div>
+                <div>
+                    <h3 class="cat-name">SUVs &amp; Crossovers</h3>
+                    <p class="cat-sub">Robust 7-seater family explorers with 4x4 off-road and provincial versatility</p>
+                </div>
+            </div>
+
+            <!-- Category Pagination Controls matching Mockup (< 1/2 >) -->
+            <div class="cat-pagination" data-cat="suv" data-page="1" data-total="3">
+                <button class="cat-page-btn btn-cat-prev" type="button" aria-label="Previous Page in SUVs &amp; Crossovers" disabled><i class="fa-solid fa-chevron-left"></i></button>
+                <span class="cat-page-num"><span class="cat-curr-page">1</span> / <span class="cat-total-page">3</span></span>
+                <button class="cat-page-btn btn-cat-next" type="button" aria-label="Next Page in SUVs &amp; Crossovers" ><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+        </div>
+
+        <div class="vehicle-grid-3" id="grid-suv">
+                                            <div class="v-card-exact" data-card-cat="suv" data-card-page="1" style="">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=19" class="v-card-media" title="View details of Geely Coolray Sport 1.5T">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/geely-coolray.jpg" alt="Geely Coolray Sport 1.5T" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">Sport Crossover</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=19">Geely Coolray Sport 1.5T</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: SUV • 2023</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">5 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Gasoline</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱2,800</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=19" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                            <div class="v-card-exact" data-card-cat="suv" data-card-page="1" style="">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=17" class="v-card-media" title="View details of Toyota Corolla Cross 1.8 HEV GR-S">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/toyota-corolla-cross.jpg" alt="Toyota Corolla Cross 1.8 HEV GR-S" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">Hybrid Compact Crossover</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=17">Toyota Corolla Cross 1.8 HEV GR-S</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: SUV • 2024</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">5 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Hybrid</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱3,200</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=17" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                            <div class="v-card-exact" data-card-cat="suv" data-card-page="1" style="">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=18" class="v-card-media" title="View details of Honda HR-V 1.5 V Turbo">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/honda-hr-v.jpg" alt="Honda HR-V 1.5 V Turbo" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">Turbo Compact SUV</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=18">Honda HR-V 1.5 V Turbo</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: SUV • 2024</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">5 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Gasoline</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱3,300</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=18" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                            <div class="v-card-exact" data-card-cat="suv" data-card-page="2" style="display: none;">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=20" class="v-card-media" title="View details of Hyundai Tucson 2.0 CRDi GLS">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/hyundai-tucson.jpg" alt="Hyundai Tucson 2.0 CRDi GLS" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">Modern Diesel Crossover</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=20">Hyundai Tucson 2.0 CRDi GLS</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: SUV • 2024</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">5 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Diesel</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱3,500</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=20" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                            <div class="v-card-exact" data-card-cat="suv" data-card-page="2" style="display: none;">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=7" class="v-card-media" title="View details of Nissan Terra 2.5 VL 4x2">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/nissan-terra.jpg" alt="Nissan Terra 2.5 VL 4x2" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">Executive 7-Seater</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=7">Nissan Terra 2.5 VL 4x2</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: SUV • 2023</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">7 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Diesel</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱3,800</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=7" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                            <div class="v-card-exact" data-card-cat="suv" data-card-page="2" style="display: none;">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=3" class="v-card-media" title="View details of Mitsubishi Montero Sport GT 4WD">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/mitsubishi-montero-sport.jpg" alt="Mitsubishi Montero Sport GT 4WD" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">Family Adventure SUV</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=3">Mitsubishi Montero Sport GT 4WD</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: SUV • 2024</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">7 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Diesel</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱3,900</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=3" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                            <div class="v-card-exact" data-card-cat="suv" data-card-page="3" style="display: none;">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=1" class="v-card-media" title="View details of Toyota Fortuner 2.8 4x4 LTD">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/toyota-fortuner.jpg" alt="Toyota Fortuner 2.8 4x4 LTD" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">4x4 Flagship SUV</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=1">Toyota Fortuner 2.8 4x4 LTD</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: SUV • 2024</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">7 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Diesel</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱4,200</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=1" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                            <div class="v-card-exact" data-card-cat="suv" data-card-page="3" style="display: none;">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=6" class="v-card-media" title="View details of Ford Everest Titanium+ 4x4">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/ford-everest.jpg" alt="Ford Everest Titanium+ 4x4" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">Luxury 7-Seater 4x4</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=6">Ford Everest Titanium+ 4x4</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: SUV • 2024</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">7 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Diesel</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱4,500</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=6" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                    </div>
+    </section>
+        <section class="category-row" id="cat-mpv">
+        <div class="category-header">
+            <div class="cat-title-group">
+                <div class="cat-icon-sq">
+                    <i class="fa-solid fa-people-roof"></i>
+                </div>
+                <div>
+                    <h3 class="cat-name">MPVs &amp; Family Shuttles</h3>
+                    <p class="cat-sub">Versatile 7-seater family carriers featuring flexible folding seats and plush riding comfort</p>
+                </div>
+            </div>
+
+            <!-- Category Pagination Controls matching Mockup (< 1/2 >) -->
+            <div class="cat-pagination" data-cat="mpv" data-page="1" data-total="2">
+                <button class="cat-page-btn btn-cat-prev" type="button" aria-label="Previous Page in MPVs &amp; Family Shuttles" disabled><i class="fa-solid fa-chevron-left"></i></button>
+                <span class="cat-page-num"><span class="cat-curr-page">1</span> / <span class="cat-total-page">2</span></span>
+                <button class="cat-page-btn btn-cat-next" type="button" aria-label="Next Page in MPVs &amp; Family Shuttles" ><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+        </div>
+
+        <div class="vehicle-grid-3" id="grid-mpv">
+                                            <div class="v-card-exact" data-card-cat="mpv" data-card-page="1" style="">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=22" class="v-card-media" title="View details of Toyota Avanza 1.5 G">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/toyota-avanza.jpg" alt="Toyota Avanza 1.5 G" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">7-Seater City MPV</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=22">Toyota Avanza 1.5 G</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: MPV • 2024</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">7 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Gasoline</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱2,300</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=22" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                            <div class="v-card-exact" data-card-cat="mpv" data-card-page="1" style="">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=24" class="v-card-media" title="View details of Suzuki Ertiga 1.5 GLX Hybrid">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/suzuki-ertiga.jpg" alt="Suzuki Ertiga 1.5 GLX Hybrid" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">Smart Hybrid MPV</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=24">Suzuki Ertiga 1.5 GLX Hybrid</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: MPV • 2024</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">7 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Hybrid</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱2,400</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=24" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                            <div class="v-card-exact" data-card-cat="mpv" data-card-page="1" style="">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=23" class="v-card-media" title="View details of Mitsubishi Xpander Cross">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/mitsubishi-xpander.jpg" alt="Mitsubishi Xpander Cross" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">Crossover MPV</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=23">Mitsubishi Xpander Cross</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: MPV • 2024</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">7 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Gasoline</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱2,600</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=23" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                            <div class="v-card-exact" data-card-cat="mpv" data-card-page="2" style="display: none;">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=25" class="v-card-media" title="View details of Toyota Veloz 1.5 V">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/toyota-veloz.jpg" alt="Toyota Veloz 1.5 V" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">Premium 7-Seater MPV</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=25">Toyota Veloz 1.5 V</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: MPV • 2024</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">7 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Gasoline</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱2,800</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=25" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                            <div class="v-card-exact" data-card-cat="mpv" data-card-page="2" style="display: none;">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=26" class="v-card-media" title="View details of Honda BR-V 1.5 VX SENSING">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/honda-br-v.jpg" alt="Honda BR-V 1.5 VX SENSING" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">Safety 7-Seater MPV</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=26">Honda BR-V 1.5 VX SENSING</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: MPV • 2024</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">7 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Gasoline</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱2,900</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=26" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                            <div class="v-card-exact" data-card-cat="mpv" data-card-page="2" style="display: none;">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=21" class="v-card-media" title="View details of Toyota Innova 2.8 V">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/toyota-innova.jpg" alt="Toyota Innova 2.8 V" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">Preferred Family MPV</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=21">Toyota Innova 2.8 V</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: MPV • 2024</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">7 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Diesel</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱3,000</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=21" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                    </div>
+    </section>
+        <section class="category-row" id="cat-van">
+        <div class="category-header">
+            <div class="cat-title-group">
+                <div class="cat-icon-sq">
+                    <i class="fa-solid fa-van-shuttle"></i>
+                </div>
+                <div>
+                    <h3 class="cat-name">Vans &amp; Group Shuttles</h3>
+                    <p class="cat-sub">High-capacity 12 to 15-passenger group travel, corporate shuttles, and airport transfers</p>
+                </div>
+            </div>
+
+            <!-- Category Pagination Controls matching Mockup (< 1/2 >) -->
+            <div class="cat-pagination" data-cat="van" data-page="1" data-total="1">
+                <button class="cat-page-btn btn-cat-prev" type="button" aria-label="Previous Page in Vans &amp; Group Shuttles" disabled><i class="fa-solid fa-chevron-left"></i></button>
+                <span class="cat-page-num"><span class="cat-curr-page">1</span> / <span class="cat-total-page">1</span></span>
+                <button class="cat-page-btn btn-cat-next" type="button" aria-label="Next Page in Vans &amp; Group Shuttles" disabled><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+        </div>
+
+        <div class="vehicle-grid-3" id="grid-van">
+                                            <div class="v-card-exact" data-card-cat="van" data-card-page="1" style="">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=27" class="v-card-media" title="View details of Nissan NV350 Urvan Premium">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/nissan-urvan.jpg" alt="Nissan NV350 Urvan Premium" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">15-Seater Group Shuttle</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=27">Nissan NV350 Urvan Premium</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: Van • 2024</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Manual</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">15 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Diesel</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱4,500</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=27" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                            <div class="v-card-exact" data-card-cat="van" data-card-page="1" style="">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=4" class="v-card-media" title="View details of Toyota HiAce GL Grandia">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/toyota-hiace.jpg" alt="Toyota HiAce GL Grandia" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">Executive Passenger Van</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=4">Toyota HiAce GL Grandia</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: Van • 2024</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">12 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Diesel</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱4,800</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=4" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                    </div>
+    </section>
+        <section class="category-row" id="cat-pickup">
+        <div class="category-header">
+            <div class="cat-title-group">
+                <div class="cat-icon-sq">
+                    <i class="fa-solid fa-truck-pickup"></i>
+                </div>
+                <div>
+                    <h3 class="cat-name">Pickups &amp; Utility 4x4</h3>
+                    <p class="cat-sub">Heavy-duty double-cab 4x4 utility pickups built for provincial cargo and rugged terrain</p>
+                </div>
+            </div>
+
+            <!-- Category Pagination Controls matching Mockup (< 1/2 >) -->
+            <div class="cat-pagination" data-cat="pickup" data-page="1" data-total="1">
+                <button class="cat-page-btn btn-cat-prev" type="button" aria-label="Previous Page in Pickups &amp; Utility 4x4" disabled><i class="fa-solid fa-chevron-left"></i></button>
+                <span class="cat-page-num"><span class="cat-curr-page">1</span> / <span class="cat-total-page">1</span></span>
+                <button class="cat-page-btn btn-cat-next" type="button" aria-label="Next Page in Pickups &amp; Utility 4x4" disabled><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+        </div>
+
+        <div class="vehicle-grid-3" id="grid-pickup">
+                                            <div class="v-card-exact" data-card-cat="pickup" data-card-page="1" style="">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=30" class="v-card-media" title="View details of Mitsubishi Strada Athlete 4WD">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/mitsubishi-strada.jpg" alt="Mitsubishi Strada Athlete 4WD" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">Dynamic 4WD Pickup</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=30">Mitsubishi Strada Athlete 4WD</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: Pickup • 2023</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">5 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Diesel</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱3,600</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=30" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                            <div class="v-card-exact" data-card-cat="pickup" data-card-page="1" style="">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=28" class="v-card-media" title="View details of Toyota Hilux Conquest 4x4">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/toyota-hilux.jpg" alt="Toyota Hilux Conquest 4x4" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">Heavy-Duty 4x4 Pickup</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=28">Toyota Hilux Conquest 4x4</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: Pickup • 2024</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">5 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Diesel</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱3,800</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=28" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                                            <div class="v-card-exact" data-card-cat="pickup" data-card-page="1" style="">
+                    <!-- Photo & Badges (Clickable to Details) -->
+                    <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=29" class="v-card-media" title="View details of Ford Ranger Wildtrak 4x4">
+                        <img src="http://localhost/drivesphere_updated/assets/images/vehicles/ford-ranger.jpg" alt="Ford Ranger Wildtrak 4x4" class="v-card-img" loading="lazy">
+                        
+                        <!-- Top-Right Status Badge -->
+                                                    <span class="v-status-badge available">
+                                <span class="status-dot"></span> Available
+                            </span>
+                        
+                        <!-- Bottom-Left Vehicle Type Pill -->
+                        <span class="v-type-badge">Next-Gen 4x4 Pickup</span>
+                    </a>
+
+                    <!-- Card Body -->
+                    <div class="v-card-content">
+                        <div class="v-card-header">
+                            <h4 class="v-card-title">
+                                <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=29">Ford Ranger Wildtrak 4x4</a>
+                            </h4>
+                        </div>
+                        <div class="v-class-line">Class: Pickup • 2024</div>
+
+                        <!-- 3-Column Specifications Row -->
+                        <div class="v-specs-row">
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-dharmachakra"></i>
+                                    <span class="spec-primary">Automatic</span>
+                                    <span class="spec-secondary">Transmission</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-user-group"></i>
+                                    <span class="spec-primary">5 Seats</span>
+                                    <span class="spec-secondary">Capacity</span>
+                                </div>
+                                                            <div class="spec-col">
+                                    <i class="fa-solid fa-gas-pump"></i>
+                                    <span class="spec-primary">Diesel</span>
+                                    <span class="spec-secondary">Engine / Fuel</span>
+                                </div>
+                                                    </div>
+
+                        <!-- Card Footer: Rate & Action Button -->
+                        <div class="v-card-footer">
+                            <div class="v-price-block">
+                                <span class="price-label">Rental rate</span>
+                                <div>
+                                    <span class="price-val">₱4,200</span>
+                                    <span class="price-period">/ day</span>
+                                </div>
+                            </div>
+
+                            <a href="http://localhost/drivesphere_updated/customer/vehicle.php?id=29" class="btn-details-blue">
+                                View Details <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                    </div>
+    </section>
+
+<!-- No Search Results Container -->
+<div id="noBrowseResults" class="no-results-box" style="display: none; margin: 30px 0; text-align: center; padding: 48px 24px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px;">
+    <i class="fa-solid fa-car-tunnel" style="font-size: 38px; color: #94a3b8; margin-bottom: 14px;"></i>
+    <h3 style="font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 6px;">No vehicles match your search</h3>
+    <p style="font-size: 14px; color: #64748b; margin-bottom: 18px;">Try adjusting your keyword or reset filters to browse our 30 fleet vehicles.</p>
+    <a href="dashboard.php" class="btn btn-primary" style="display: inline-block; padding: 10px 20px; border-radius: 8px; background: #0284c7; color: #fff; font-weight: 700; text-decoration: none;">Reset All Filters</a>
+</div>
+
+<!-- Dynamic Category Pagination & Search Filter Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. CATEGORY PAGINATION CONTROLLER (< 1/2 >, < 1/3 >)
+    document.querySelectorAll('.cat-pagination').forEach(pagin => {
+        const cat = pagin.getAttribute('data-cat');
+        const btnPrev = pagin.querySelector('.btn-cat-prev');
+        const btnNext = pagin.querySelector('.btn-cat-next');
+        const currSpan = pagin.querySelector('.cat-curr-page');
+        const totalSpan = pagin.querySelector('.cat-total-page');
+        const grid = document.getElementById('grid-' + cat);
+        if (!grid) return;
+
+        function updateCategoryPage(newPage) {
+            let total = parseInt(pagin.getAttribute('data-total') || '1', 10);
+            if (newPage < 1) newPage = 1;
+            if (newPage > total) newPage = total;
+            pagin.setAttribute('data-page', newPage);
+            if (currSpan) currSpan.textContent = newPage;
+            if (btnPrev) btnPrev.disabled = (newPage <= 1);
+            if (btnNext) btnNext.disabled = (newPage >= total);
+
+            // Filter cards: show cards matching data-card-page == newPage (if not filtered out by search)
+            const cards = grid.querySelectorAll('.v-card-exact');
+            cards.forEach(card => {
+                const cardPage = parseInt(card.getAttribute('data-card-page'), 10);
+                const isFilteredOut = card.getAttribute('data-filtered-out') === '1';
+                if (!isFilteredOut && cardPage === newPage) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        if (btnPrev) {
+            btnPrev.addEventListener('click', function(e) {
+                e.preventDefault();
+                let current = parseInt(pagin.getAttribute('data-page') || '1', 10);
+                updateCategoryPage(current - 1);
+            });
+        }
+
+        if (btnNext) {
+            btnNext.addEventListener('click', function(e) {
+                e.preventDefault();
+                let current = parseInt(pagin.getAttribute('data-page') || '1', 10);
+                updateCategoryPage(current + 1);
+            });
+        }
+    });
+
+    // 2. REAL-TIME SEARCH & FILTER CONTROLLER
+    const searchInput = document.getElementById('browseSearchInput');
+    const noResultsBox = document.getElementById('noBrowseResults');
+
+    function applySearchAndPaging() {
+        const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        let totalVisibleCardsOverall = 0;
+
+        document.querySelectorAll('.category-row').forEach(row => {
+            const cat = row.id.replace('cat-', '');
+            const pagin = row.querySelector('.cat-pagination');
+            const grid = document.getElementById('grid-' + cat);
+            if (!grid) return;
+
+            const cards = grid.querySelectorAll('.v-card-exact');
+            let matchingCards = [];
+
+            cards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+                const matches = (!query || text.includes(query));
+                if (matches) {
+                    card.removeAttribute('data-filtered-out');
+                    matchingCards.push(card);
+                } else {
+                    card.setAttribute('data-filtered-out', '1');
+                    card.style.display = 'none';
+                }
+            });
+
+            totalVisibleCardsOverall += matchingCards.length;
+
+            if (matchingCards.length === 0) {
+                row.style.display = 'none';
+            } else {
+                row.style.display = 'block';
+                // Recalculate pages for matching cards: 3 cards per page
+                const perPage = 3;
+                const newTotalPages = Math.max(1, Math.ceil(matchingCards.length / perPage));
+                if (pagin) {
+                    pagin.setAttribute('data-total', newTotalPages);
+                    pagin.setAttribute('data-page', '1');
+                    const currSpan = pagin.querySelector('.cat-curr-page');
+                    const totalSpan = pagin.querySelector('.cat-total-page');
+                    const btnPrev = pagin.querySelector('.btn-cat-prev');
+                    const btnNext = pagin.querySelector('.btn-cat-next');
+                    if (currSpan) currSpan.textContent = '1';
+                    if (totalSpan) totalSpan.textContent = newTotalPages;
+                    if (btnPrev) btnPrev.disabled = true;
+                    if (btnNext) btnNext.disabled = (newTotalPages <= 1);
+                }
+
+                // Assign page indexes and show page 1
+                matchingCards.forEach((card, idx) => {
+                    const page = Math.floor(idx / perPage) + 1;
+                    card.setAttribute('data-card-page', page);
+                    if (page === 1) {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+        });
+
+        if (noResultsBox) {
+            noResultsBox.style.display = (totalVisibleCardsOverall === 0) ? 'block' : 'none';
+        }
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', applySearchAndPaging);
+    }
+});
+</script>
+
+<!-- ==========================================================================
+     REAL 3D MODEL CAR LIVE FLEET 360° TURNTABLE ENGINE (NO HREF LINKS)
+     ========================================================================== -->
+<script src="http://localhost/drivesphere_updated/js/three.min.js"></script>
+<script src="http://localhost/drivesphere_updated/js/DRACOLoader.js"></script>
+<script src="http://localhost/drivesphere_updated/js/GLTFLoader.js"></script>
+<script>
+(function() {
+    const canvas = document.getElementById('webglFleetCanvas');
+    const hudBearing = document.getElementById('fleetBearingAngle');
+    const loadingOverlay = document.getElementById('fleetLoadingOverlay');
+    if (!canvas || typeof THREE === 'undefined') return;
+
+    const container = canvas.parentElement;
+    let width = container.clientWidth || 440;
+    let height = container.clientHeight || 180;
+
+    // Scene & Camera
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x060c14, 0.035);
+
+    const camera = new THREE.PerspectiveCamera(34, width / height, 0.1, 100);
+    camera.position.set(0, 2.4, 5.8);
+    camera.lookAt(0, 0.35, 0);
+
+    // Renderer
+    const renderer = new THREE.WebGLRenderer({
+        canvas: canvas,
+        antialias: true,
+        alpha: true,
+        powerPreference: 'high-performance'
+    });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.35;
+
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0xdbeafe, 1.2);
+    scene.add(ambientLight);
+
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
+    keyLight.position.set(6, 10, 5);
+    scene.add(keyLight);
+
+    const fillLight = new THREE.DirectionalLight(0x38bdf8, 1.5);
+    fillLight.position.set(-6, 5, -4);
+    scene.add(fillLight);
+
+    const topSpot = new THREE.SpotLight(0x38bdf8, 3.0, 20, Math.PI / 4, 0.5, 1);
+    topSpot.position.set(0, 8, 0);
+    scene.add(topSpot);
+
+    // Turntable Group (Car sits on turntable and rotates 360)
+    const turntable = new THREE.Group();
+    scene.add(turntable);
+
+    // Radar Disc Platform Texture using Canvas
+    const radarCanvas = document.createElement('canvas');
+    radarCanvas.width = 512;
+    radarCanvas.height = 512;
+    const rCtx = radarCanvas.getContext('2d');
+
+    function updateRadarTexture(rotAngle) {
+        rCtx.clearRect(0, 0, 512, 512);
+        const cx = 256;
+        const cy = 256;
+        const r = 240;
+
+        // Glowing Disc
+        const g = rCtx.createRadialGradient(cx, cy, 20, cx, cy, r);
+        g.addColorStop(0, 'rgba(14, 165, 233, 0.25)');
+        g.addColorStop(0.6, 'rgba(14, 165, 233, 0.08)');
+        g.addColorStop(0.95, 'rgba(14, 165, 233, 0.35)');
+        g.addColorStop(1, 'rgba(56, 189, 248, 0.95)');
+
+        rCtx.beginPath();
+        rCtx.arc(cx, cy, r, 0, Math.PI * 2);
+        rCtx.fillStyle = g;
+        rCtx.fill();
+        rCtx.lineWidth = 4;
+        rCtx.strokeStyle = 'rgba(56, 189, 248, 0.8)';
+        rCtx.stroke();
+
+        // Concentric rings
+        [0.35, 0.65, 0.85].forEach(f => {
+            rCtx.beginPath();
+            rCtx.arc(cx, cy, r * f, 0, Math.PI * 2);
+            rCtx.lineWidth = 1.5;
+            rCtx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+            rCtx.setLineDash([6, 8]);
+            rCtx.stroke();
+            rCtx.setLineDash([]);
+        });
+
+        // Sweeping radar beam
+        rCtx.save();
+        rCtx.beginPath();
+        rCtx.arc(cx, cy, r, 0, Math.PI * 2);
+        rCtx.clip();
+
+        const beamSpread = 0.65;
+        rCtx.beginPath();
+        rCtx.moveTo(cx, cy);
+        for (let a = rotAngle - beamSpread; a <= rotAngle; a += 0.05) {
+            rCtx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+        }
+        rCtx.closePath();
+        const bGrad = rCtx.createRadialGradient(cx, cy, 20, cx + Math.cos(rotAngle) * r, cy + Math.sin(rotAngle) * r, r);
+        bGrad.addColorStop(0, 'rgba(56, 189, 248, 0.0)');
+        bGrad.addColorStop(1, 'rgba(56, 189, 248, 0.55)');
+        rCtx.fillStyle = bGrad;
+        rCtx.fill();
+        rCtx.restore();
+
+        // Degree Ticks
+        const ticks = 36;
+        for (let i = 0; i < ticks; i++) {
+            const a = (i / ticks) * Math.PI * 2;
+            const isMajor = (i % 9 === 0);
+            const len = isMajor ? 16 : 7;
+            const x1 = cx + Math.cos(a) * (r - 2);
+            const y1 = cy + Math.sin(a) * (r - 2);
+            const x2 = cx + Math.cos(a) * (r - 2 - len);
+            const y2 = cy + Math.sin(a) * (r - 2 - len);
+
+            rCtx.beginPath();
+            rCtx.moveTo(x1, y1);
+            rCtx.lineTo(x2, y2);
+            rCtx.lineWidth = isMajor ? 3 : 1.5;
+            rCtx.strokeStyle = isMajor ? '#38bdf8' : 'rgba(56, 189, 248, 0.4)';
+            rCtx.stroke();
+
+            if (isMajor) {
+                rCtx.save();
+                const deg = ((i / ticks) * 360) + '°';
+                rCtx.font = 'bold 16px monospace';
+                rCtx.fillStyle = '#94a3b8';
+                rCtx.textAlign = 'center';
+                rCtx.textBaseline = 'middle';
+                rCtx.fillText(deg, cx + Math.cos(a) * (r - 30), cy + Math.sin(a) * (r - 30));
+                rCtx.restore();
+            }
+        }
+
+        // Radar Blips
+        const blips = [
+            { d: 0.72, a: rotAngle + 1.2, label: 'BGC' },
+            { d: 0.85, a: rotAngle + 2.8, label: 'NAIA' },
+            { d: 0.58, a: rotAngle + 4.5, label: 'MAKATI' }
+        ];
+        blips.forEach(b => {
+            const bx = cx + Math.cos(b.a) * (r * b.d);
+            const by = cy + Math.sin(b.a) * (r * b.d);
+            rCtx.beginPath();
+            rCtx.arc(bx, by, 5, 0, Math.PI * 2);
+            rCtx.fillStyle = '#22c55e';
+            rCtx.fill();
+            rCtx.beginPath();
+            rCtx.arc(bx, by, 10, 0, Math.PI * 2);
+            rCtx.strokeStyle = 'rgba(34, 197, 94, 0.5)';
+            rCtx.lineWidth = 2;
+            rCtx.stroke();
+            rCtx.font = 'bold 12px monospace';
+            rCtx.fillStyle = '#86efac';
+            rCtx.fillText(b.label, bx + 12, by - 4);
+        });
+    }
+    updateRadarTexture(0);
+
+    const radarTex = new THREE.CanvasTexture(radarCanvas);
+    const stageGeo = new THREE.CircleGeometry(4.8, 64);
+    const stageMat = new THREE.MeshBasicMaterial({
+        map: radarTex,
+        transparent: true,
+        opacity: 0.95,
+        side: THREE.DoubleSide
+    });
+    const stageMesh = new THREE.Mesh(stageGeo, stageMat);
+    stageMesh.rotation.x = -Math.PI / 2;
+    stageMesh.position.y = -0.05;
+    scene.add(stageMesh);
+
+    // Ground contact shadow
+    const shadowGeo = new THREE.PlaneGeometry(5.2, 2.6);
+    const shadowCanvas = document.createElement('canvas');
+    shadowCanvas.width = 256;
+    shadowCanvas.height = 128;
+    const sCtx = shadowCanvas.getContext('2d');
+    const sGrad = sCtx.createRadialGradient(128, 64, 10, 128, 64, 120);
+    sGrad.addColorStop(0, 'rgba(0, 0, 0, 0.85)');
+    sGrad.addColorStop(0.6, 'rgba(0, 0, 0, 0.5)');
+    sGrad.addColorStop(1, 'rgba(0, 0, 0, 0.0)');
+    sCtx.fillStyle = sGrad;
+    sCtx.fillRect(0, 0, 256, 128);
+    const shadowTex = new THREE.CanvasTexture(shadowCanvas);
+    const shadowMat = new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.85 });
+    const shadowMesh = new THREE.Mesh(shadowGeo, shadowMat);
+    shadowMesh.rotation.x = -Math.PI / 2;
+    shadowMesh.position.y = 0.01;
+    turntable.add(shadowMesh);
+
+    // Cyan Underglow Light
+    const underglow = new THREE.PointLight(0x38bdf8, 3.5, 3.5);
+    underglow.position.set(0, 0.25, 0);
+    turntable.add(underglow);
+
+    // LOAD REAL GLTF 3D CAR MODEL WITH DRACO
+    const dracoLoader = new THREE.DRACOLoader();
+    dracoLoader.setDecoderPath('http://localhost/drivesphere_updated/js/draco/');
+    const loader = new THREE.GLTFLoader();
+    loader.setDRACOLoader(dracoLoader);
+
+    loader.load(
+        'http://localhost/drivesphere_updated/assets/car.glb',
+        function(gltf) {
+            const carModel = gltf.scene;
+
+            // Compute bounding box to normalize scale and center position
+            const box = new THREE.Box3().setFromObject(carModel);
+            const size = box.getSize(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const targetScale = 4.2 / maxDim;
+            carModel.scale.set(targetScale, targetScale, targetScale);
+
+            // Center car horizontally and place directly on ground
+            box.setFromObject(carModel);
+            const center = box.getCenter(new THREE.Vector3());
+            carModel.position.x -= center.x;
+            carModel.position.y -= box.min.y;
+            carModel.position.z -= center.z;
+            carModel.rotation.y = Math.PI * 0.75; // Front three-quarter dynamic angle
+
+            turntable.add(carModel);
+            if (loadingOverlay) {
+                loadingOverlay.style.opacity = '0';
+                setTimeout(() => { loadingOverlay.style.display = 'none'; }, 250);
+            }
+            if (!animating) {
+                animating = true;
+                animate();
+            }
+        },
+        undefined,
+        function(err) {
+            console.error('Error loading car.glb:', err);
+            if (loadingOverlay) {
+                loadingOverlay.innerHTML = '<span style="color:#ef4444;">Live 3D Telemetry Offline</span>';
+            }
+        }
+    );
+
+    // Initial render of stage
+    renderer.render(scene, camera);
+
+    // Animation & Interactive 360 Drag (No href links, purely interactive)
+    let angle = 0;
+    let isDragging = false;
+    let previousMouseX = 0;
+    let autoRotate = true;
+    let animating = false;
+
+    canvas.addEventListener('mousedown', function(e) {
+        isDragging = true;
+        autoRotate = false;
+        previousMouseX = e.clientX;
+    });
+
+    window.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        const deltaX = e.clientX - previousMouseX;
+        turntable.rotation.y += deltaX * 0.015;
+        previousMouseX = e.clientX;
+    });
+
+    window.addEventListener('mouseup', function() {
+        if (isDragging) {
+            isDragging = false;
+            setTimeout(() => { if (!isDragging) autoRotate = true; }, 1200);
+        }
+    });
+
+    // Touch support for mobile & tablet
+    canvas.addEventListener('touchstart', function(e) {
+        if (e.touches.length === 1) {
+            isDragging = true;
+            autoRotate = false;
+            previousMouseX = e.touches[0].clientX;
+        }
+    }, { passive: true });
+
+    window.addEventListener('touchmove', function(e) {
+        if (!isDragging || e.touches.length !== 1) return;
+        const deltaX = e.touches[0].clientX - previousMouseX;
+        turntable.rotation.y += deltaX * 0.018;
+        previousMouseX = e.touches[0].clientX;
+    }, { passive: true });
+
+    window.addEventListener('touchend', function() {
+        if (isDragging) {
+            isDragging = false;
+            setTimeout(() => { if (!isDragging) autoRotate = true; }, 1200);
+        }
+    });
+
+    // Resize handler for perfect clarity and responsive layout
+    window.addEventListener('resize', function() {
+        const newW = container.clientWidth;
+        const newH = container.clientHeight;
+        if (newW && newH && (newW !== width || newH !== height)) {
+            width = newW;
+            height = newH;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        }
+    });
+
+    function animate() {
+        requestAnimationFrame(animate);
+
+        if (autoRotate) {
+            turntable.rotation.y += 0.015;
+            if (turntable.rotation.y >= Math.PI * 2) {
+                turntable.rotation.y -= Math.PI * 2;
+            }
+        }
+
+        angle += 0.02;
+        updateRadarTexture(angle);
+        radarTex.needsUpdate = true;
+
+        // Bearing HUD Calculation (0° to 360°)
+        const normY = ((turntable.rotation.y % (Math.PI * 2)) + (Math.PI * 2)) % (Math.PI * 2);
+        const deg = Math.round(normY * (180 / Math.PI));
+        if (hudBearing) {
+            hudBearing.textContent = `BEARING: ${deg}°`;
+        }
+
+        renderer.render(scene, camera);
+    }
+    animate();
+})();
+</script>
+
+</div><!-- /.p-wrap -->
+</main>
+
+<footer class="p-foot">
+  <div class="p-wrap">
+    <div class="p-foot-grid">
+      <!-- Left: Logo & Tagline -->
+      <div class="p-foot-brand">
+        <a href="http://localhost/drivesphere_updated/customer/dashboard.php" class="p-foot-logo">
+          <span class="p-foot-logo-box">
+            <img src="http://localhost/drivesphere_updated/images/DriveSphere_logo.jpg" alt="DriveSphere Logo">
+          </span>
+          <span class="p-foot-logo-text">DriveSphere</span>
+        </a>
+        <p class="p-foot-desc">Your Premier Philippine Vehicle Rental &amp; Smart Fleet Management Platform</p>
+      </div>
+
+      <!-- Links 1: About Us -->
+      <div class="p-foot-col">
+        <h4>ABOUT US</h4>
+        <a href="http://localhost/drivesphere_updated/customer/about.php">Our Story</a>
+        <a href="http://localhost/drivesphere_updated/customer/about.php">Fleet Network</a>
+      </div>
+
+      <!-- Links 2: Legal & Compliance -->
+      <div class="p-foot-col">
+        <h4>LEGAL &amp; COMPLIANCE</h4>
+        <a href="http://localhost/drivesphere_updated/policies.php">Privacy Policy</a>
+      </div>
+
+      <!-- Links 3: Get Help -->
+      <div class="p-foot-col">
+        <h4>GET HELP</h4>
+        <a href="http://localhost/drivesphere_updated/customer/help.php">FAQs</a>
+        <a href="http://localhost/drivesphere_updated/customer/help.php">Booking Support</a>
+      </div>
+    </div>
+
+    <!-- Contact Details Bar -->
+    <div class="p-foot-contact-bar">
+      <div class="p-contact-item">
+        <i class="fa-solid fa-phone"></i>
+        <span>24/7 Hotline: <strong>(02) 8888-DRIVE</strong></span>
+      </div>
+      <div class="p-contact-item">
+        <i class="fa-regular fa-envelope"></i>
+        <span>support@drivesphere.ph</span>
+      </div>
+      <div class="p-contact-item">
+        <i class="fa-solid fa-location-dot"></i>
+        <span>BGC, Taguig City, Philippines</span>
+      </div>
+    </div>
+
+    <!-- Bottom Copyright -->
+    <div class="p-foot-bot">
+      <span>&copy; 2026 DriveSphere Philippines Inc. All rights reserved.</span>
+    </div>
+  </div>
+</footer>
+
+<div class="modal-backdrop" id="filterModalBackdrop" role="dialog" aria-modal="true" aria-labelledby="filterModalTitle">
+  <div class="filter-dialog">
+    <div class="filter-modal-head">
+      <h3 class="filter-modal-title" id="filterModalTitle">
+        <i class="fa-solid fa-sliders"></i> Filter
+      </h3>
+      <button class="filter-close-x" id="closeFilterModal" type="button" aria-label="Close Filter">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <form method="get" action="http://localhost/drivesphere_updated/customer/dashboard.php" id="filterModalForm">
+      <div class="filter-modal-body">
+        <!-- 1. Vehicle Type -->
+        <div>
+          <label class="filter-group-lbl">Vehicle Type</label>
+          <div class="pill-options-grid" id="typePills">
+            <button type="button" class="filter-pill active-blue" data-type="all">All</button>
+            <button type="button" class="filter-pill" data-type="sedan">Sedan</button>
+            <button type="button" class="filter-pill" data-type="suv">SUV</button>
+            <button type="button" class="filter-pill" data-type="van">MPV / Van</button>
+            <button type="button" class="filter-pill" data-type="crossover">Crossover</button>
+            <button type="button" class="filter-pill" data-type="pickup">Pickup</button>
+          </div>
+          <input type="hidden" name="type" id="filterTypeInput" value="all">
+        </div>
+
+        <!-- 2. Transmission -->
+        <div>
+          <label class="filter-group-lbl">Transmission</label>
+          <div class="pill-options-grid" id="transPills" style="grid-template-columns: repeat(3, 1fr);">
+            <button type="button" class="filter-pill active-navy" data-trans="all">All</button>
+            <button type="button" class="filter-pill" data-trans="Automatic">Automatic</button>
+            <button type="button" class="filter-pill" data-trans="Manual">Manual</button>
+          </div>
+          <input type="hidden" name="transmission" id="filterTransInput" value="all">
+        </div>
+
+        <!-- 3. Price Range -->
+        <div>
+          <div class="filter-group-lbl">
+            <span>Price Range</span>
+            <small>Per Day (PHP)</small>
+          </div>
+          <div class="price-inputs-row">
+            <div class="price-input-box">
+              <span class="price-box-lbl">Min Price</span>
+              <select name="min_price" id="filterMinPrice">
+                <option value="1000">₱ 1,000</option>
+                <option value="1500" selected>₱ 1,500</option>
+                <option value="2000">₱ 2,000</option>
+                <option value="3000">₱ 3,000</option>
+                <option value="4000">₱ 4,000</option>
+              </select>
+            </div>
+            <div class="price-input-box">
+              <span class="price-box-lbl">Max Price</span>
+              <select name="max_price" id="filterMaxPrice">
+                <option value="3500">₱ 3,500</option>
+                <option value="5000">₱ 5,000</option>
+                <option value="6000" selected>₱ 6,000</option>
+                <option value="8000">₱ 8,000</option>
+                <option value="10000">₱ 10,000+</option>
+              </select>
+            </div>
+          </div>
+          <div class="range-slider-wrap">
+            <div class="range-bar-track">
+              <div class="range-bar-fill" id="sliderFill"></div>
+            </div>
+            <div class="range-endpoints">
+              <span>₱1,000</span>
+              <span>₱3,500</span>
+              <span>₱10,000+</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Brand -->
+        <div>
+          <label class="filter-group-lbl">Brand</label>
+          <div class="brand-select-box">
+            <select name="brand" id="filterBrand">
+              <option value="all">All Brands (Toyota, Honda, Mitsubishi, Ford...)</option>
+              <option value="Toyota">Toyota</option>
+              <option value="Honda">Honda</option>
+              <option value="Mitsubishi">Mitsubishi</option>
+              <option value="Ford">Ford</option>
+              <option value="Mazda">Mazda</option>
+              <option value="Hyundai">Hyundai</option>
+            </select>
+            <i class="fa-solid fa-chevron-down select-chevron"></i>
+          </div>
+        </div>
+
+        <!-- 5. Actions -->
+        <div>
+          <button type="submit" class="btn-apply-filters">
+            <i class="fa-solid fa-check"></i> Apply Filters
+          </button>
+          <button type="button" class="btn-reset-filters" id="resetFiltersBtn">
+            Reset All Filters
+          </button>
+        </div>
+      </div>
+
+      <div class="filter-modal-foot">
+        <div>
+          <span class="status-dot-green"></span> Filtering across 42 Fleet Hubs
+        </div>
+        <div>
+          DriveSphere v2.4
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="http://localhost/drivesphere_updated/js/portal.js"></script>
+</body>
+</html>

@@ -71,8 +71,8 @@
                     
                     <!-- Intro Banner -->
                     <div class="policy-intro-banner">
-                        <div class="pi-image" style="background-image:url('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=800');">
-                            <div class="pi-tag">BGC Headquarters</div>
+                        <div class="pi-image">
+                            <img src="<?= BASE_URL ?>images/about_showroom.png" alt="DriveSphere Headquarters" style="width:100%; height:100%; object-fit:cover; display:block;">
                         </div>
                         <div class="pi-text">
                             <span class="badge-text-gray"><i class="fa-solid fa-file-contract"></i> PHILIPPINE REGULATORY MANDATE</span>
@@ -156,7 +156,7 @@
                             </div>
                             <div class="p-item border-none">
                                 <h4>3.3 Maintenance Logging &amp; Telemetry</h4>
-                                <p>Automatic telemetry logs oil lifespan, engine temperatures, and emergency impact detection continuously to our central operations center in BGC. Any critical vehicle alert triggers immediate remote dispatch assessment and dispatch of roadside service units.</p>
+                                <p>Automatic telemetry logs oil lifespan, engine temperatures, and emergency impact detection continuously to our central operations center in BGC. Any critical vehicle alert triggers immediate remote dispatch assessment and dispatch of mobile support units.</p>
                             </div>
                         </div>
                     </article>
@@ -189,6 +189,123 @@
             </div>
         </section>
     </main>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var tocMenu = document.querySelector('.toc-menu');
+      if (!tocMenu) return;
+
+      var tocLinks = Array.from(tocMenu.querySelectorAll('a[href^="#"]'));
+      if (!tocLinks.length) return;
+
+      var sections = [];
+      tocLinks.forEach(function (link) {
+        var id = link.getAttribute('href').replace(/^#/, '');
+        var el = document.getElementById(id);
+        if (el) {
+          sections.push({ id: id, link: link, el: el });
+        }
+      });
+
+      if (!sections.length) return;
+
+      var isClickScrolling = false;
+      var clickTimeout = null;
+
+      function setActive(id) {
+        sections.forEach(function (s) {
+          if (s.id === id) {
+            s.link.classList.add('active');
+          } else {
+            s.link.classList.remove('active');
+          }
+        });
+      }
+
+      sections.forEach(function (s) {
+        s.link.addEventListener('click', function (e) {
+          e.preventDefault();
+          isClickScrolling = true;
+          clearTimeout(clickTimeout);
+
+          setActive(s.id);
+
+          var navOffset = 90;
+          var elRect = s.el.getBoundingClientRect();
+          var targetPosition = elRect.top + window.pageYOffset - navOffset;
+
+          window.scrollTo({
+            top: Math.max(0, targetPosition),
+            behavior: 'smooth'
+          });
+
+          if (history.pushState) {
+            history.pushState(null, null, '#' + s.id);
+          }
+
+          clickTimeout = setTimeout(function () {
+            isClickScrolling = false;
+          }, 850);
+        });
+      });
+
+      var ticking = false;
+      function updateScrollSpy() {
+        if (isClickScrolling) return;
+
+        var scrollY = window.pageYOffset || document.documentElement.scrollTop;
+        var windowHeight = window.innerHeight;
+        var docHeight = document.documentElement.scrollHeight;
+
+        if (scrollY + windowHeight >= docHeight - 40) {
+          setActive(sections[sections.length - 1].id);
+          return;
+        }
+
+        var navOffset = 150;
+        var currentActiveId = sections[0].id;
+
+        for (var i = 0; i < sections.length; i++) {
+          var top = sections[i].el.getBoundingClientRect().top;
+          if (top <= navOffset) {
+            currentActiveId = sections[i].id;
+          }
+        }
+
+        setActive(currentActiveId);
+      }
+
+      window.addEventListener('scroll', function () {
+        if (!ticking) {
+          window.requestAnimationFrame(function () {
+            updateScrollSpy();
+            ticking = false;
+          });
+          ticking = true;
+        }
+      }, { passive: true });
+
+      if (window.location.hash) {
+        var targetHash = window.location.hash.replace(/^#/, '');
+        var match = sections.find(function (s) { return s.id === targetHash; });
+        if (match) {
+          setActive(match.id);
+          setTimeout(function () {
+            var elRect = match.el.getBoundingClientRect();
+            var targetPosition = elRect.top + window.pageYOffset - 90;
+            window.scrollTo({
+              top: Math.max(0, targetPosition),
+              behavior: 'smooth'
+            });
+          }, 150);
+        } else {
+          updateScrollSpy();
+        }
+      } else {
+        updateScrollSpy();
+      }
+    });
+    </script>
 
     <!-- Footer Section (matching SCREEN P06) -->
     <?php include __DIR__ . '/includes/footer.php'; ?>
