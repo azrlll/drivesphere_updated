@@ -177,7 +177,7 @@ $pdo = getDBConnection();
         $fTitle = ($fv['brand'] ?: $fv['make']) . ' ' . $fv['model'];
         $fTag = $fv['tag_label'] ?: (strtoupper($fv['category']) . ' • ' . $fv['year']);
         $fTarget = 'customer/vehicle.php?id=' . (int)$fv['id'];
-        $fLoginLink = BASE_URL . 'login.php?redirect=' . urlencode($fTarget);
+        $fLoginLink = is_customer() ? BASE_URL . $fTarget : BASE_URL . 'login.php?redirect=' . urlencode($fTarget);
     ?>
         <div class="fleet-card">
             <a href="<?= e($fLoginLink) ?>" class="card-image-placeholder" title="View details of <?= e($fTitle) ?>">

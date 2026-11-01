@@ -14,7 +14,7 @@ $back = $_POST['back'] ?? 'admin/rentals.php';
 if (strpos($back, 'admin/') !== 0 || strpos($back, '..') !== false) { $back = 'admin/rentals.php'; }   // only allow admin pages
 
 function get_res($pdo, $id) {
-    $st = $pdo->prepare("SELECT r.*, v.make, v.model, v.odometer FROM reservations r JOIN vehicles v ON r.vehicle_id = v.id WHERE r.id = ?");
+    $st = $pdo->prepare("SELECT r.*, v.brand, v.make, v.model, v.odometer FROM reservations r JOIN vehicles v ON r.vehicle_id = v.id WHERE r.id = ?");
     $st->execute([$id]);
     return $st->fetch();
 }
@@ -27,7 +27,8 @@ switch ($op) {
             flash_set('error', 'Cannot approve: the vehicle is not available for those dates (maintenance or overlapping booking).'); break;
         }
         $pdo->prepare("UPDATE reservations SET status='reserved', approved_at=NOW() WHERE id=?")->execute([$id]);
-        if ($r['user_id']) add_notification($pdo, $r['user_id'], 'customer', 'booking', 'Booking Confirmed — ' . $r['make'] . ' ' . $r['model'],
+        $vehName = trim(($r['brand'] ?: $r['make']) . ' ' . $r['model']);
+        if ($r['user_id']) add_notification($pdo, $r['user_id'], 'customer', 'booking', 'Booking Confirmed — ' . $vehName,
             'Your rental ' . $r['reference_code'] . ' has been approved by DriveSphere Fleet Command.', 'customer/receipt.php?ref=' . $r['reference_code']);
         flash_set('success', 'Request ' . $r['reference_code'] . ' approved and reserved.');
         break;
@@ -36,9 +37,11 @@ switch ($op) {
         $r = get_res($pdo, $id);
         $reason = trim($_POST['reason'] ?? '');
         if (!$r || $r['status'] !== 'pending') { flash_set('error', 'Only pending requests can be rejected.'); break; }
-        $pdo->prepare("UPDATE reservations SET status='rejected', rejection_reason=? WHERE id=?")->execute([$reason !== '' ? $reason : 'Not available', $id]);
-        if ($r['user_id']) add_notification($pdo, $r['user_id'], 'customer', 'booking', 'Rental request declined',
-            $r['reference_code'] . ' was declined. Reason: ' . ($reason !== '' ? $reason : 'Not available'), 'customer/receipt.php?ref=' . $r['reference_code']);
+        $finalReason = $reason !== '' ? $reason : 'Vehicle unavailable at the selected location.';
+        $pdo->prepare("UPDATE reservations SET status='rejected', rejection_reason=? WHERE id=?")->execute([$finalReason, $id]);
+        $vehName = trim(($r['brand'] ?: $r['make']) . ' ' . $r['model']);
+        if ($r['user_id']) add_notification($pdo, $r['user_id'], 'customer', 'booking', 'Reservation Declined — ' . $vehName,
+            'Your reservation for ' . $vehName . ' (' . $r['reference_code'] . ') has been declined. Reason: ' . $finalReason, 'customer/receipt.php?ref=' . $r['reference_code']);
         flash_set('success', 'Request ' . $r['reference_code'] . ' rejected.');
         break;
 

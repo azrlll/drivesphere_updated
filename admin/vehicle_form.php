@@ -4,6 +4,7 @@ require_once __DIR__ . '/../includes/admin_header.php';
 $id = (int)($_GET['id'] ?? 0);
 $v = [
     'category_id' => 1,
+    'branch_id' => 1,
     'brand' => '',
     'make' => '',
     'model' => '',
@@ -40,6 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $model = trim($_POST['model'] ?? '');
     $year = (int)($_POST['year'] ?? 2024);
     $categoryId = (int)($_POST['category_id'] ?? 1);
+    $branchId = (int)($_POST['branch_id'] ?? 1);
     $category = trim($_POST['category'] ?? 'Sedan');
     $tagLabel = trim($_POST['tag_label'] ?? '');
     $plate = strtoupper(trim($_POST['plate_number'] ?? ''));
@@ -78,11 +80,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flash_set('error', 'That plate number already exists.'); 
         } else {
             if ($id) {
-                $upd = $pdo->prepare("UPDATE vehicles SET category_id=?, brand=?, make=?, model=?, year=?, category=?, tag_label=?, plate_number=?, daily_rate=?, image_path=?, weekly_rate=?, transmission=?, fuel_type=?, seating_capacity=?, seats=?, status=?, image_url=?, description=?, odometer=? WHERE id=?");
-                $upd->execute([$categoryId, $brand, $make, $model, $year, $category, $tagLabel, $plate, $dailyRate, $imagePath, $weeklyRate, $transmission, $fuelType, $seatingCapacity, $seats, $status, $imageUrl, $description, $odometer, $id]);
+                $upd = $pdo->prepare("UPDATE vehicles SET category_id=?, branch_id=?, brand=?, make=?, model=?, year=?, category=?, tag_label=?, plate_number=?, daily_rate=?, image_path=?, weekly_rate=?, transmission=?, fuel_type=?, seating_capacity=?, seats=?, status=?, image_url=?, description=?, odometer=? WHERE id=?");
+                $upd->execute([$categoryId, $branchId, $brand, $make, $model, $year, $category, $tagLabel, $plate, $dailyRate, $imagePath, $weeklyRate, $transmission, $fuelType, $seatingCapacity, $seats, $status, $imageUrl, $description, $odometer, $id]);
             } else {
-                $ins = $pdo->prepare("INSERT INTO vehicles (category_id, brand, make, model, year, category, tag_label, plate_number, daily_rate, image_path, weekly_rate, transmission, fuel_type, seating_capacity, seats, status, image_url, description, odometer) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
-                $ins->execute([$categoryId, $brand, $make, $model, $year, $category, $tagLabel, $plate, $dailyRate, $imagePath, $weeklyRate, $transmission, $fuelType, $seatingCapacity, $seats, $status, $imageUrl, $description, $odometer]);
+                $ins = $pdo->prepare("INSERT INTO vehicles (category_id, branch_id, brand, make, model, year, category, tag_label, plate_number, daily_rate, image_path, weekly_rate, transmission, fuel_type, seating_capacity, seats, status, image_url, description, odometer) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+                $ins->execute([$categoryId, $branchId, $brand, $make, $model, $year, $category, $tagLabel, $plate, $dailyRate, $imagePath, $weeklyRate, $transmission, $fuelType, $seatingCapacity, $seats, $status, $imageUrl, $description, $odometer]);
             }
             flash_set('success', 'Vehicle saved successfully.'); 
             redirect('admin/manage.php');
@@ -92,6 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 flash_show();
 $cats = $pdo->query("SELECT id, name, slug FROM categories ORDER BY id")->fetchAll();
+$allBranches = $pdo->query("SELECT id, name, city FROM branches ORDER BY id ASC")->fetchAll();
 $categoryOptions = ['Sedan', 'Hatchback', 'SUV', 'MPV', 'Van', 'Pickup'];
 ?>
 <div class="crumb"><a href="<?= $A ?>manage.php">&larr; Back to Manage Vehicles</a></div>
@@ -123,6 +126,15 @@ $categoryOptions = ['Sedan', 'Hatchback', 'SUV', 'MPV', 'Van', 'Pickup'];
       <select name="category_id">
         <?php foreach ($cats as $c): ?>
           <option value="<?= $c['id'] ?>" <?= $v['category_id'] == $c['id'] ? 'selected' : '' ?>><?= e($c['name']) ?></option>
+        <?php endforeach; ?>
+      </select>
+    </div>
+    <div class="field"><label>Assigned Hub Branch (Philippine Location)</label>
+      <select name="branch_id" required>
+        <?php foreach ($allBranches as $b): ?>
+          <option value="<?= $b['id'] ?>" <?= ((int)($v['branch_id'] ?? 1) === (int)$b['id']) ? 'selected' : '' ?>>
+            <?= e($b['name']) ?> (<?= e($b['city']) ?>)
+          </option>
         <?php endforeach; ?>
       </select>
     </div>

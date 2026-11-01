@@ -4,7 +4,8 @@ function load_my_booking($pdo, $ref) {
     $uid = customer_user_id();
     $sql = "SELECT r.*, 
                    v.make, v.model, v.brand, v.year, v.category, v.tag_label, v.plate_number, 
-                   v.image_path, v.image_url, v.transmission, v.fuel_type, v.seats, v.seating_capacity, v.daily_rate,
+                   v.image_path, v.image_url, v.transmission, v.fuel_type, v.seats, v.seating_capacity, 
+                   v.passenger_doors, v.fuel_consumption, v.engine_specs, v.exterior_color, v.interior_color, v.daily_rate,
                    u.first_name, u.last_name, u.email as user_email
             FROM reservations r 
             JOIN vehicles v ON r.vehicle_id = v.id 

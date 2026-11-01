@@ -1,0 +1,37 @@
+# ======================================================================
+# DriveSphere .gitignore — Protect Credentials, Backups & Dev Files
+# ======================================================================
+
+# 1. Sensitive Configuration & Secrets (Never commit credentials)
+includes/config.local.php
+includes/config.production.php
+.env
+.env.*
+*.key
+*.pem
+
+# 2. Database Backups, Local Dumps & Archives
+backups/
+*.sql.bak
+sql/panel_revisions.sql
+*.zip
+*.tar.gz
+*.7z
+*.rar
+
+# 3. Development Scratchpads, Automation Logs & Temporary Scripts
+scratch/
+scratch_profile/
+chk_v_img.php
+*.log
+*.tmp
+debug.txt
+
+# 4. OS & IDE Metadata
+.DS_Store
+Thumbs.db
+ehthumbs.db
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace

@@ -254,7 +254,7 @@ $query = $baseQuery;
                 $savePct = 10;
                 $badgeBot = $v['tag_label'] ?: 'Available for Self-Drive or Chauffeur';
                 $targetPath = 'customer/vehicle.php?id=' . (int)$v['id'] . ($query !== '' ? '&' . $query : '');
-                $vehicleLink = BASE_URL . 'login.php?redirect=' . urlencode($targetPath);
+                $vehicleLink = is_customer() ? BASE_URL . $targetPath : BASE_URL . 'login.php?redirect=' . urlencode($targetPath);
             ?>
                 <div class="vehicle-card-horizontal" data-price="<?= (int)$dailyRate ?>" data-category="<?= e($v['category_slug']) ?>">
                     <div class="card-img-col">

@@ -7,12 +7,21 @@ require_once __DIR__ . '/../includes/customer_booking.php';
 $refCode = $_GET['ref'] ?? '';
 $b = load_my_booking($pdo, $refCode);
 
-$isReservedView = in_array($b['status'], ['reserved', 'pending']);
+$isReservedView = in_array($b['status'], ['reserved', 'pending', 'rejected']);
 $pickupTime = strtotime($b['pickup_date']);
 $returnTime = strtotime($b['return_date']);
 $deadlineTime = strtotime($b['pickup_date'] . ' + 2 hours');
 $days = max(1, (int)$b['days']);
 $specimenCode = substr($b['reference_code'], -4);
+
+// Resolve physical hub address
+$pickupBranchRow = null;
+if (!empty($b['pickup_location'])) {
+    $stBranch = $pdo->prepare("SELECT * FROM branches WHERE name = ? OR code = ? LIMIT 1");
+    $stBranch->execute([$b['pickup_location'], $b['pickup_location']]);
+    $pickupBranchRow = $stBranch->fetch();
+}
+$pickupBranchAddr = $pickupBranchRow ? ($pickupBranchRow['address'] . ', ' . $pickupBranchRow['city']) : 'Station Check-in Bay';
 ?>
 
 <div class="rcpt-container">
@@ -22,7 +31,7 @@ $specimenCode = substr($b['reference_code'], -4);
             <i class="fa-solid fa-arrow-left"></i> Back to Rental History
         </a>
 
-        <?php if ($isReservedView): ?>
+        <?php if ($isReservedView && $b['status'] !== 'rejected'): ?>
             <div class="rcpt-top-actions">
                 <button type="button" class="rcpt-btn-top" onclick="window.print();">
                     <i class="fa-solid fa-print"></i> Print Receipt
@@ -33,6 +42,26 @@ $specimenCode = substr($b['reference_code'], -4);
             </div>
         <?php endif; ?>
     </div>
+
+    <!-- Rejection Alert Notice (Phase 6) -->
+    <?php if ($b['status'] === 'rejected'): ?>
+        <div style="background: #fef2f2; border: 1.5px solid #f87171; border-radius: 12px; padding: 18px 22px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.08);">
+            <div style="display: flex; align-items: flex-start; gap: 14px;">
+                <div style="width: 38px; height: 38px; border-radius: 50%; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 16px; font-weight: 800; color: #991b1b; margin: 0 0 4px;">Rental Request Declined</h3>
+                    <p style="font-size: 13.5px; color: #7f1d1d; margin: 0 0 8px;">
+                        Your reservation for <strong><?= e($b['make'] . ' ' . $b['model']) ?></strong> (<?= e($b['reference_code']) ?>) was declined by DriveSphere Fleet Command.
+                    </p>
+                    <div style="background: #ffffff; border: 1px solid #fecaca; border-radius: 8px; padding: 10px 14px; font-size: 13px; color: #b91c1c;">
+                        <strong>Decline Reason:</strong> <?= e($b['rejection_reason'] ?: 'Vehicle unavailable at the selected location or schedule constraint.') ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
 
     <!-- Main Receipt Card -->
     <div class="rcpt-main-card">
@@ -61,7 +90,7 @@ $specimenCode = substr($b['reference_code'], -4);
                 </div>
                 <div class="rcpt-summary-col">
                     <div class="rcpt-summary-lbl">DATE ISSUED</div>
-                    <div class="rcpt-summary-val"><?= date('M d, Y \bull; h:i A', strtotime($b['created_at'])) ?></div>
+                    <div class="rcpt-summary-val"><?= date('F j, Y — g:i A', strtotime($b['created_at'])) ?></div>
                 </div>
                 <div class="rcpt-summary-col">
                     <div class="rcpt-summary-lbl">CUSTOMER NAME</div>
@@ -69,15 +98,15 @@ $specimenCode = substr($b['reference_code'], -4);
                 </div>
                 <div class="rcpt-summary-col">
                     <div class="rcpt-summary-lbl">ISSUED BY</div>
-                    <div class="rcpt-summary-val blue">BGC Station #04</div>
+                    <div class="rcpt-summary-val blue"><?= e($b['pickup_location']) ?></div>
                 </div>
             </div>
 
             <!-- Fleet Unit Box -->
             <div class="rcpt-fleet-card">
-                <div class="rcpt-specimen-box">
-                    <img src="<?= BASE_URL ?>images/history_registry_reference.png" alt="Fleet Blueprint" class="rcpt-specimen-img">
-                    <span class="rcpt-specimen-tag">PREMIUM SUV CLASS</span>
+                <div class="rcpt-specimen-box" style="background: #ffffff; display: flex; align-items: center; justify-content: center;">
+                    <img src="<?= e(vehicle_image_url($b['image_path'] ?: $b['image_url'])) ?>" alt="<?= e($b['make'] . ' ' . $b['model']) ?>" class="rcpt-specimen-img" style="object-fit: contain; max-height: 100%;">
+                    <span class="rcpt-specimen-tag"><?= e(strtoupper($b['category'])) ?> CLASS</span>
                 </div>
                 <div class="rcpt-fleet-info">
                     <div class="rcpt-fleet-top">
@@ -87,7 +116,9 @@ $specimenCode = substr($b['reference_code'], -4);
                     <h2 class="rcpt-fleet-model"><?= e($b['make'] . ' ' . $b['model']) ?></h2>
                     <p class="rcpt-fleet-desc">Includes Comprehensive Gold Insurance, Smart RFID Autopass, and 24/7 Customer Support.</p>
                     <div class="rcpt-pills-wrap">
-                        <span class="rcpt-pill-item"><i class="fa-regular fa-user"></i> <?= (int)$b['seats'] ?> Seats</span>
+                        <span class="rcpt-pill-item"><i class="fa-solid fa-users"></i> <?= (int)($b['seating_capacity'] ?: $b['seats']) ?> Seats</span>
+                        <span class="rcpt-pill-item"><i class="fa-solid fa-door-closed"></i> <?= (int)($b['passenger_doors'] ?? ($b['category'] === 'Sedan' ? 4 : 5)) ?> Doors</span>
+                        <span class="rcpt-pill-item"><i class="fa-solid fa-gauge-high"></i> <?= e($b['fuel_consumption'] ?? '15.6 km/L') ?></span>
                         <span class="rcpt-pill-item"><i class="fa-solid fa-gear"></i> <?= e($b['transmission']) ?></span>
                         <span class="rcpt-pill-item"><i class="fa-solid fa-gas-pump"></i> <?= e($b['fuel_type']) ?></span>
                     </div>
@@ -199,20 +230,30 @@ $specimenCode = substr($b['reference_code'], -4);
                     </div>
                     <div class="rcpt-title-wrap">
                         <div class="rcpt-header-tag" style="margin:0 0 2px;">DRIVESPHERE OFFICIAL VOUCHER</div>
-                        <h1 class="rcpt-title-main">Rental Reservation Receipt</h1>
-                        <p style="color:#64748b; font-size:12px; margin:2px 0 0;">Your pre-authorized booking has been processed and locked in the central fleet queue.</p>
+                        <h1 class="rcpt-title-main">Rental Reservation Summary</h1>
+                        <p style="color:#64748b; font-size:12px; margin:2px 0 0;">Official customer booking confirmation slip &amp; fleet authorization record.</p>
                     </div>
                 </div>
-                <span class="rcpt-status-badge-reserved">
-                    <span class="rcpt-status-dot-amber"></span> STATUS: RESERVED
-                </span>
+                <?php if ($b['status'] === 'pending'): ?>
+                    <span class="rcpt-status-badge-reserved" style="background:#fef3c7; color:#92400e; border:1px solid #fde68a;">
+                        <span class="rcpt-status-dot-amber"></span> STATUS: PENDING APPROVAL
+                    </span>
+                <?php elseif ($b['status'] === 'rejected'): ?>
+                    <span class="rcpt-status-badge-reserved" style="background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5;">
+                        <span class="rcpt-status-dot-amber" style="background:#dc2626;"></span> STATUS: DECLINED
+                    </span>
+                <?php else: ?>
+                    <span class="rcpt-status-badge-reserved" style="background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0;">
+                        <span class="rcpt-status-dot-amber" style="background:#10b981;"></span> STATUS: RESERVED
+                    </span>
+                <?php endif; ?>
             </div>
 
-            <!-- 4-Column Meta Summary Box -->
-            <div class="rcpt-summary-grid">
+            <!-- 5-Column Meta Summary Box (Includes Payment Method - Phase 8) -->
+            <div class="rcpt-summary-grid" style="grid-template-columns: 1.4fr 1.1fr 1fr 1.3fr 1.1fr;">
                 <div class="rcpt-summary-col">
                     <div class="rcpt-summary-lbl">VEHICLE NAME</div>
-                    <div class="rcpt-summary-val"><?= e($b['make'] . ' ' . $b['model']) ?></div>
+                    <div class="rcpt-summary-val" style="white-space: normal; line-height: 1.25;"><?= e($b['make'] . ' ' . $b['model']) ?></div>
                 </div>
                 <div class="rcpt-summary-col">
                     <div class="rcpt-summary-lbl">CUSTOMER NAME</div>
@@ -223,23 +264,46 @@ $specimenCode = substr($b['reference_code'], -4);
                     <div class="rcpt-summary-val"><?= date('M d, Y', strtotime($b['created_at'])) ?></div>
                 </div>
                 <div class="rcpt-summary-col">
+                    <div class="rcpt-summary-lbl">PAYMENT METHOD</div>
+                    <div class="rcpt-summary-val" style="color: #0284c7; font-weight:700;">
+                        <?= e($b['payment_method'] ?: 'Cash on Pickup') ?>
+                        <?php if (!empty($b['payment_reference'])): ?><br><small style="font-size:10px;color:#64748b;">Ref: <?= e($b['payment_reference']) ?></small><?php endif; ?>
+                        <?php 
+                        $isCash = (stripos($b['payment_method'] ?? '', 'Cash') !== false || empty($b['payment_method']));
+                        $statusLbl = $isCash ? 'Payment upon Pickup' : (($b['payment_status'] ?? '') === 'verified' ? 'Payment Verified' : 'Pending Verification');
+                        $statusClr = $isCash ? '#0d9488' : (($b['payment_status'] ?? '') === 'verified' ? '#16a34a' : '#d97706');
+                        ?>
+                        <div style="font-size:9.5px; font-weight:700; color:<?= $statusClr ?>; margin-top:2px;">
+                            &bull; <?= $statusLbl ?>
+                        </div>
+                    </div>
+                </div>
+                <div class="rcpt-summary-col">
                     <div class="rcpt-summary-lbl">RENTAL ID</div>
                     <div class="rcpt-summary-val blue"><?= e($b['reference_code']) ?></div>
                 </div>
             </div>
 
-            <!-- Dual Specimen & Brand Sync Box -->
-            <div class="rcpt-specimen-dual-grid">
-                <div class="rcpt-specimen-box" style="height: 140px;">
-                    <img src="<?= BASE_URL ?>images/history_registry_reference.png" alt="Fleet Blueprint" class="rcpt-specimen-img">
-                    <span class="rcpt-specimen-tag">Reserved Fleet Specimen #<?= e($specimenCode) ?></span>
+            <!-- Reserved Vehicle Card: Displays the actual reserved vehicle image and details -->
+            <div class="rcpt-fleet-card" style="margin-bottom: 22px;">
+                <div class="rcpt-specimen-box" style="height: 140px; background: #ffffff; display: flex; align-items: center; justify-content: center;">
+                    <img src="<?= e(vehicle_image_url($b['image_path'] ?: $b['image_url'])) ?>" alt="<?= e($b['make'] . ' ' . $b['model']) ?>" class="rcpt-specimen-img" style="object-fit: contain; max-height: 100%;">
+                    <span class="rcpt-specimen-tag"><?= e(strtoupper($b['category'])) ?> CLASS</span>
                 </div>
-                <div class="rcpt-theme-sync-box">
-                    <div class="rcpt-theme-sync-title">
-                        <i class="fa-solid fa-circle-check"></i> Brand Theme Sync
+                <div class="rcpt-fleet-info">
+                    <div class="rcpt-fleet-top">
+                        <span class="rcpt-fleet-tag-blue">RESERVED FLEET UNIT</span>
+                        <span class="rcpt-fleet-plate">Plate: <?= e($b['plate_number'] ?: 'Standard Fleet Unit') ?></span>
                     </div>
-                    <img src="<?= BASE_URL ?>images/history_color_codes.png" alt="Color Theme" class="rcpt-theme-sync-img">
-                    <span style="font-size: 10px; color: #94a3b8; margin-top: 4px;">Verified Telemetry Profile</span>
+                    <h2 class="rcpt-fleet-model"><?= e($b['make'] . ' ' . $b['model']) ?></h2>
+                    <p class="rcpt-fleet-desc">Official Philippine-market rental vehicle. Assigned and prepared for pickup at <?= e($b['pickup_location']) ?>.</p>
+                    <div class="rcpt-pills-wrap">
+                        <span class="rcpt-pill-item"><i class="fa-solid fa-users"></i> <?= (int)($b['seating_capacity'] ?: $b['seats']) ?> Seats</span>
+                        <span class="rcpt-pill-item"><i class="fa-solid fa-door-closed"></i> <?= (int)($b['passenger_doors'] ?? ($b['category'] === 'Sedan' ? 4 : 5)) ?> Doors</span>
+                        <span class="rcpt-pill-item"><i class="fa-solid fa-gauge-high"></i> <?= e($b['fuel_consumption'] ?? '15.6 km/L') ?></span>
+                        <span class="rcpt-pill-item"><i class="fa-solid fa-gear"></i> <?= e($b['transmission']) ?></span>
+                        <span class="rcpt-pill-item"><i class="fa-solid fa-gas-pump"></i> <?= e($b['fuel_type']) ?></span>
+                    </div>
                 </div>
             </div>
 
@@ -276,7 +340,7 @@ $specimenCode = substr($b['reference_code'], -4);
                     </div>
                     <div class="rcpt-spec-info">
                         <div class="rcpt-spec-lbl">Date of Pick-up</div>
-                        <div class="rcpt-spec-val"><?= date('M d, Y \bull; h:i A', $pickupTime) ?></div>
+                        <div class="rcpt-spec-val"><?= date('F j, Y (l) — g:i A', $pickupTime) ?></div>
                         <div class="rcpt-spec-sub">Primary check-in slot</div>
                     </div>
                 </div>
@@ -289,7 +353,7 @@ $specimenCode = substr($b['reference_code'], -4);
                     <div class="rcpt-spec-info">
                         <div class="rcpt-spec-lbl">Pick-up Hub Location</div>
                         <div class="rcpt-spec-val"><?= e($b['pickup_location']) ?></div>
-                        <div class="rcpt-spec-sub">Arrival Level Bay 4, Pasay City</div>
+                        <div class="rcpt-spec-sub"><?= e($pickupBranchAddr) ?></div>
                     </div>
                 </div>
             </div>
@@ -298,9 +362,22 @@ $specimenCode = substr($b['reference_code'], -4);
             <div class="rcpt-deadline-banner">
                 <i class="fa-solid fa-hourglass-half rcpt-deadline-icon"></i>
                 <div>
-                    <div class="rcpt-deadline-title">DEADLINE OF PICK-UP: <?= date('M d, Y \bull; h:i A', $deadlineTime) ?></div>
-                    <p class="rcpt-deadline-desc">Strict 2-hour reservation grace window. Vehicles uncollected by <?= date('h:i A', $deadlineTime) ?> will be re-assigned to the standby fleet according to LTFRB regulations.</p>
+                    <div class="rcpt-deadline-title">Pickup Deadline: <?= date('F j, Y — g:i A', $deadlineTime) ?></div>
+                    <p class="rcpt-deadline-desc">Strict 2-hour reservation grace window. Vehicles uncollected by <?= date('g:i A', $deadlineTime) ?> will be re-assigned to the standby fleet according to LTFRB regulations.</p>
                 </div>
+            </div>
+
+            <!-- Official Office Hours Notice (Phase 2 & Phase 8) -->
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 12px 16px; margin: 12px 0 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-clock" style="color: #16a34a; font-size: 14px;"></i>
+                    <span style="font-size: 12.5px; color: #166534; font-weight: 600;">
+                        Official Hub Operating Hours: <strong>8:00 AM – 8:00 PM, Philippine Standard Time (PST)</strong>
+                    </span>
+                </div>
+                <span style="font-size: 11px; color: #15803d; background: #dcfce7; padding: 3px 8px; border-radius: 6px; font-weight: 700;">
+                    Daily Service
+                </span>
             </div>
 
             <!-- Fiscal Breakdown & Pre-Authorization -->

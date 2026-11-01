@@ -1,36 +1,40 @@
-    <?php
-    // actions/download_receipt_pdf.php
-    // Generates and downloads a clean, official PDF receipt for the customer's reservation.
-    require_once __DIR__ . '/../includes/functions.php';
-    $pdo = getDBConnection();
-    $customerId = customer_user_id();
+<?php
+// actions/download_receipt_pdf.php
+// Generates and downloads a clean, official PDF receipt for the customer's reservation.
+require_once __DIR__ . '/../includes/functions.php';
+$pdo = getDBConnection();
+$customerId = customer_user_id();
 
-    if ($customerId <= 0 && !is_admin()) {
+if ($customerId <= 0 && !is_admin()) {
     require_customer();
-    }
+}
 
-    $ref = trim($_GET['ref'] ?? '');
-    if ($customerId > 0) {
-    $st = $pdo->prepare("SELECT r.*, v.make, v.model, v.plate_number, v.daily_rate, v.seats, v.transmission, v.fuel_type
-                            FROM reservations r
-                            JOIN vehicles v ON r.vehicle_id = v.id
-                            WHERE r.reference_code = ? AND r.user_id = ?");
+$ref = trim($_GET['ref'] ?? '');
+if ($customerId > 0) {
+    $st = $pdo->prepare("SELECT r.*, v.make, v.model, v.brand, v.category, v.plate_number, v.daily_rate, 
+                                v.seats, v.seating_capacity, v.passenger_doors, v.fuel_consumption, 
+                                v.transmission, v.fuel_type, v.image_path, v.image_url
+                         FROM reservations r
+                         JOIN vehicles v ON r.vehicle_id = v.id
+                         WHERE r.reference_code = ? AND r.user_id = ?");
     $st->execute([$ref, $customerId]);
-    } else {
-    $st = $pdo->prepare("SELECT r.*, v.make, v.model, v.plate_number, v.daily_rate, v.seats, v.transmission, v.fuel_type
-                            FROM reservations r
-                            JOIN vehicles v ON r.vehicle_id = v.id
-                            WHERE r.reference_code = ?");
+} else {
+    $st = $pdo->prepare("SELECT r.*, v.make, v.model, v.brand, v.category, v.plate_number, v.daily_rate, 
+                                v.seats, v.seating_capacity, v.passenger_doors, v.fuel_consumption, 
+                                v.transmission, v.fuel_type, v.image_path, v.image_url
+                         FROM reservations r
+                         JOIN vehicles v ON r.vehicle_id = v.id
+                         WHERE r.reference_code = ?");
     $st->execute([$ref]);
-    }
-    $b = $st->fetch();
+}
+$b = $st->fetch();
 
-    if (!$b) {
+if (!$b) {
     flash_set('error', 'Booking not found.');
     redirect('customer/history.php');
-    }
+}
 
-    class ReceiptPDF {
+class ReceiptPDF {
     private $buffer = '';
     private $offsets = [];
     private $pageContent = '';
@@ -74,95 +78,101 @@
         $this->buffer .= "trailer\n<< /Size 5 /Root 1 0 R >>\nstartxref\n$xrefOffset\n%%EOF";
         return $this->buffer;
     }
-    }
+}
 
-    $pdf = new ReceiptPDF();
+$pdf = new ReceiptPDF();
 
-    // Header Branding
-    $pdf->addText(40, 790, "DRIVESPHERE PHILIPPINES", 18, 'F2');
-    $pdf->addText(40, 775, "Official Customer Vehicle Rental Receipt & Reservation Voucher", 10, 'F1');
-    $pdf->addLine(40, 765, 555, 765, 1.5);
+// Header Branding
+$pdf->addText(40, 790, "DRIVESPHERE PHILIPPINES", 18, 'F2');
+$pdf->addText(40, 775, "Official Customer Vehicle Rental Receipt & Reservation Voucher", 10, 'F1');
+$pdf->addLine(40, 765, 555, 765, 1.5);
 
-    // Reference & Meta Box
-    $pdf->addText(40, 745, "RENTAL REFERENCE:", 9, 'F2');
-    $pdf->addText(170, 745, $b['reference_code'], 10, 'F1');
+// Reference & Meta Box
+$pdf->addText(40, 745, "RENTAL REFERENCE:", 9, 'F2');
+$pdf->addText(170, 745, $b['reference_code'], 10, 'F1');
 
-    $pdf->addText(40, 730, "DATE ISSUED:", 9, 'F2');
-    $pdf->addText(170, 730, date('F d, Y - h:i A', strtotime($b['created_at'])), 10, 'F1');
+$pdf->addText(40, 730, "DATE ISSUED:", 9, 'F2');
+$pdf->addText(170, 730, date('F j, Y - g:i A', strtotime($b['created_at'])), 10, 'F1');
 
-    $pdf->addText(40, 715, "CUSTOMER NAME:", 9, 'F2');
-    $pdf->addText(170, 715, $b['driver_name'], 10, 'F1');
+$pdf->addText(40, 715, "CUSTOMER NAME:", 9, 'F2');
+$pdf->addText(170, 715, $b['driver_name'], 10, 'F1');
 
-    $pdf->addText(40, 700, "RESERVATION STATUS:", 9, 'F2');
-    $pdf->addText(170, 700, strtoupper($b['status']), 10, 'F2');
+$pdf->addText(40, 700, "RESERVATION STATUS:", 9, 'F2');
+$pdf->addText(170, 700, strtoupper($b['status']), 10, 'F2');
 
-    $pdf->addLine(40, 688, 555, 688, 0.5);
+$pdf->addLine(40, 688, 555, 688, 0.5);
 
-    // Vehicle Details
-    $pdf->addText(40, 670, "FLEET VEHICLE SPECIFICATIONS", 12, 'F2');
-    $pdf->addText(40, 650, "Vehicle Model:", 10, 'F2');
-    $pdf->addText(170, 650, $b['make'] . ' ' . $b['model'], 10, 'F1');
+// Vehicle Details
+$pdf->addText(40, 670, "FLEET VEHICLE SPECIFICATIONS", 12, 'F2');
+$pdf->addText(40, 650, "Vehicle Model:", 10, 'F2');
+$pdf->addText(170, 650, $b['make'] . ' ' . $b['model'] . " (" . strtoupper($b['category']) . " CLASS)", 10, 'F1');
 
-    $pdf->addText(40, 635, "License Plate:", 10, 'F2');
-    $pdf->addText(170, 635, $b['plate_number'] ?: 'Verified Fleet Unit', 10, 'F1');
+$doors = (int)($b['passenger_doors'] ?? ($b['category'] === 'Sedan' ? 4 : 5));
+$pdf->addText(40, 635, "License Plate:", 10, 'F2');
+$pdf->addText(170, 635, ($b['plate_number'] ?: 'Verified Fleet Unit') . " | {$doors} Doors", 10, 'F1');
 
-    $pdf->addText(40, 620, "Configuration:", 10, 'F2');
-    $pdf->addText(170, 620, $b['transmission'] . " | " . $b['seats'] . " Seats | " . $b['fuel_type'], 10, 'F1');
+$seats = (int)($b['seating_capacity'] ?: $b['seats']);
+$pdf->addText(40, 620, "Configuration:", 10, 'F2');
+$pdf->addText(170, 620, $b['transmission'] . " | " . $seats . " Seats | " . $b['fuel_type'] . " | " . ($b['fuel_consumption'] ?? '15.6 km/L'), 10, 'F1');
 
-    $pdf->addLine(40, 608, 555, 608, 0.5);
+$pdf->addLine(40, 608, 555, 608, 0.5);
 
-    // Itinerary
-    $pdf->addText(40, 590, "TRIP ITINERARY & HANDOVER SCHEDULE", 12, 'F2');
-    $pdf->addText(40, 570, "Pick-up Date & Time:", 10, 'F2');
-    $pdf->addText(170, 570, date('F d, Y - h:i A', strtotime($b['pickup_date'])), 10, 'F1');
+// Itinerary
+$pickupTs = strtotime($b['pickup_date']);
+$returnTs = strtotime($b['return_date']);
+$deadlineTs = strtotime($b['pickup_date'] . ' + 2 hours');
 
-    $pdf->addText(40, 555, "Pick-up Hub Location:", 10, 'F2');
-    $pdf->addText(170, 555, $b['pickup_location'], 10, 'F1');
+$pdf->addText(40, 590, "TRIP ITINERARY & HANDOVER SCHEDULE", 12, 'F2');
+$pdf->addText(40, 570, "Pick-up Date & Time:", 10, 'F2');
+$pdf->addText(170, 570, date('F j, Y (l) - g:i A', $pickupTs), 10, 'F1');
 
-    $pdf->addText(40, 540, "Return Date & Time:", 10, 'F2');
-    $pdf->addText(170, 540, date('F d, Y - h:i A', strtotime($b['return_date'])), 10, 'F1');
+$pdf->addText(40, 555, "Pick-up Hub Location:", 10, 'F2');
+$pdf->addText(170, 555, $b['pickup_location'], 10, 'F1');
 
-    $pdf->addText(40, 525, "Return Hub Location:", 10, 'F2');
-    $pdf->addText(170, 525, $b['return_location'], 10, 'F1');
+$pdf->addText(40, 540, "Return Date & Time:", 10, 'F2');
+$pdf->addText(170, 540, date('F j, Y (l) - g:i A', $returnTs), 10, 'F1');
 
-    $pdf->addText(40, 510, "Total Duration:", 10, 'F2');
-    $pdf->addText(170, 510, ((int)$b['days']) . " Day(s)", 10, 'F1');
+$pdf->addText(40, 525, "Return Hub Location:", 10, 'F2');
+$pdf->addText(170, 525, $b['return_location'], 10, 'F1');
 
-    $pdf->addLine(40, 498, 555, 498, 0.5);
+$pdf->addText(40, 510, "Total Duration:", 10, 'F2');
+$pdf->addText(170, 510, ((int)$b['days']) . " Day(s) (Office Operating Hours: 8:00 AM - 8:00 PM)", 10, 'F1');
 
-    // Fiscal Breakdown
-    $pdf->addText(40, 480, "FISCAL BREAKDOWN & CHARGES (PHP)", 12, 'F2');
+$pdf->addLine(40, 498, 555, 498, 0.5);
 
-    $pdf->addText(40, 460, "Base Rental Charge (" . ((int)$b['days']) . " Days @ PHP " . number_format($b['daily_rate'], 2) . "):", 10, 'F1');
-    $pdf->addText(450, 460, "PHP " . number_format($b['base_amount'], 2), 10, 'F2');
+// Fiscal Breakdown
+$pdf->addText(40, 480, "FISCAL BREAKDOWN & CHARGES (PHP)", 12, 'F2');
 
-    $pdf->addText(40, 445, "Mandatory Government VAT (12%):", 10, 'F1');
-    $pdf->addText(450, 445, "PHP " . number_format($b['vat_amount'], 2), 10, 'F2');
+$pdf->addText(40, 460, "Base Rental Charge (" . ((int)$b['days']) . " Days @ PHP " . number_format($b['daily_rate'], 2) . "):", 10, 'F1');
+$pdf->addText(450, 460, "PHP " . number_format($b['base_amount'], 2), 10, 'F2');
 
-    $pdf->addText(40, 430, "Pre-authorized Refundable Security Deposit:", 10, 'F1');
-    $pdf->addText(450, 430, "PHP " . number_format($b['deposit_amount'], 2), 10, 'F2');
+$pdf->addText(40, 445, "Mandatory Government VAT (12%):", 10, 'F1');
+$pdf->addText(450, 445, "PHP " . number_format($b['vat_amount'], 2), 10, 'F2');
 
-    $pdf->addLine(40, 418, 555, 418, 1);
+$pdf->addText(40, 430, "Pre-authorized Refundable Security Deposit:", 10, 'F1');
+$pdf->addText(450, 430, "PHP " . number_format($b['deposit_amount'], 2), 10, 'F2');
 
-    $pdf->addText(40, 400, "TOTAL PAYABLE NET AMOUNT:", 12, 'F2');
-    $pdf->addText(440, 400, "PHP " . number_format($b['total_price'], 2), 13, 'F2');
+$pdf->addLine(40, 418, 555, 418, 1);
 
-    // Footer notes
-    $pdf->addLine(40, 380, 555, 380, 0.5);
-    $pdf->addText(40, 360, "TERMS & CONDITIONS SUMMARY:", 9, 'F2');
-    $pdf->addText(40, 345, "- Primary driver must present a valid Philippine LTO license or IDP at station vehicle handover.", 8.5, 'F1');
-    $pdf->addText(40, 332, "- Vehicles are delivered with a full tank of fuel and must be surrendered with an equivalent level.", 8.5, 'F1');
-    $pdf->addText(40, 319, "- Refundable security deposit is released within 24 hours of vehicle return check-in inspection.", 8.5, 'F1');
-    $pdf->addText(40, 306, "- 24/7 Dedicated Customer Support and Fleet Command Hotline: (02) 8888-DRIVE.", 8.5, 'F1');
+$pdf->addText(40, 400, "TOTAL PAYABLE NET AMOUNT:", 12, 'F2');
+$pdf->addText(440, 400, "PHP " . number_format($b['total_price'], 2), 13, 'F2');
 
-    $pdf->addText(40, 260, "Generated by DriveSphere Fleet System on " . date('Y-m-d H:i:s') . " - Authentic Digital Copy", 8, 'F3');
+// Footer notes
+$pdf->addLine(40, 380, 555, 380, 0.5);
+$pdf->addText(40, 360, "TERMS & CONDITIONS SUMMARY:", 9, 'F2');
+$pdf->addText(40, 345, "- Primary driver must present a valid Philippine LTO license or IDP at station vehicle handover.", 8.5, 'F1');
+$pdf->addText(40, 332, "- Pickup deadline: " . date('F j, Y - g:i A', $deadlineTs) . " (Strict 2-hour grace window).", 8.5, 'F1');
+$pdf->addText(40, 319, "- Refundable security deposit is released within 24 hours of vehicle return check-in inspection.", 8.5, 'F1');
+$pdf->addText(40, 306, "- 24/7 Dedicated Customer Support and Fleet Command Hotline: (02) 8888-DRIVE.", 8.5, 'F1');
 
-    $output = $pdf->output();
+$pdf->addText(40, 260, "Generated by DriveSphere Fleet System on " . date('Y-m-d H:i:s') . " - Authentic Digital Copy", 8, 'F3');
 
-    header('Content-Type: application/pdf');
-    header('Content-Disposition: attachment; filename="DriveSphere_Receipt_' . $b['reference_code'] . '.pdf"');
-    header('Content-Length: ' . strlen($output));
-    header('Cache-Control: private, max-age=0, must-revalidate');
-    header('Pragma: public');
-    echo $output;
-    exit;
+$output = $pdf->output();
+
+header('Content-Type: application/pdf');
+header('Content-Disposition: attachment; filename="DriveSphere_Receipt_' . $b['reference_code'] . '.pdf"');
+header('Content-Length: ' . strlen($output));
+header('Cache-Control: private, max-age=0, must-revalidate');
+header('Pragma: public');
+echo $output;
+exit;

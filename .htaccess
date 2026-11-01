@@ -1,0 +1,17 @@
+# ----------------------------------------------------------------------
+# DriveSphere Production .htaccess for InfinityFree Deployment
+# ----------------------------------------------------------------------
+
+# Default entry point
+DirectoryIndex index.php index.html
+
+# Prevent directory indexing
+Options -Indexes
+
+# Protect sensitive file types from direct public access
+<FilesMatch "^(\.env|\.git|\.ht|.*\.sql|.*\.log|.*\.bak|.*\.md|composer\..*|package\..*)$">
+    Require all denied
+</FilesMatch>
+
+# Enforce UTF-8 default character set
+AddDefaultCharset UTF-8

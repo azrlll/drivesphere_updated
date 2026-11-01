@@ -6,8 +6,12 @@ require_once __DIR__ . '/../includes/admin_header.php';
 // Filter parameters
 $statusFilter = $_GET['status'] ?? 'all';
 $catFilter = $_GET['cat'] ?? 'all';
+$branchFilter = isset($_GET['branch']) && $_GET['branch'] !== 'all' && $_GET['branch'] !== '' ? (int)$_GET['branch'] : 0;
 $q = trim($_GET['q'] ?? '');
 $perPage = max(1, min(42, (int)($_GET['per_page'] ?? 6))); // Default 6 matching mockup
+
+// Branches list for filtering
+$allBranches = $pdo->query("SELECT id, name, city FROM branches ORDER BY id ASC")->fetchAll(PDO::FETCH_ASSOC);
 
 // Compute global status counts
 $countAll = (int)$pdo->query("SELECT COUNT(*) FROM vehicles")->fetchColumn();
@@ -32,6 +36,11 @@ if ($catFilter !== 'all' && $catFilter !== '') {
     $params['cat'] = strtolower($catFilter);
 }
 
+if ($branchFilter > 0) {
+    $where[] = "v.branch_id = :branch";
+    $params['branch'] = $branchFilter;
+}
+
 if ($q !== '') {
     $where[] = "(v.model LIKE :q OR v.brand LIKE :q OR v.make LIKE :q OR v.plate_number LIKE :q OR v.category LIKE :q)";
     $params['q'] = '%' . $q . '%';
@@ -47,8 +56,10 @@ $totalPages = max(1, (int)ceil($totalVehicles / $perPage));
 $page = max(1, min($totalPages, (int)($_GET['page'] ?? 1)));
 $offset = ($page - 1) * $perPage;
 
-$sql = "SELECT v.*, c.name AS cat_name FROM vehicles v 
+$sql = "SELECT v.*, c.name AS cat_name, b.name AS branch_name, b.city AS branch_city 
+        FROM vehicles v 
         LEFT JOIN categories c ON v.category_id=c.id 
+        LEFT JOIN branches b ON v.branch_id=b.id
         WHERE $whereSql 
         ORDER BY v.id ASC 
         LIMIT :limit OFFSET :offset";
@@ -106,6 +117,27 @@ $end = min($offset + $perPage, $totalVehicles);
     </div>
   </div>
 
+  <!-- Branch Hub Quick Filter Dropdown -->
+  <div style="position:relative;">
+    <button type="button" class="btn-filter-icon" id="branchFilterBtn" title="Filter by Branch Hub" aria-haspopup="true" aria-expanded="false" style="display:flex; align-items:center; gap:6px; width:auto; padding:0 12px; font-size:12px; font-weight:700;">
+      <i class="fa-solid fa-location-dot" style="color:#0284c7;"></i>
+      <span><?= $branchFilter > 0 ? 'Hub: Selected' : 'Hub Locations' ?></span>
+      <i class="fa-solid fa-chevron-down" style="font-size:9px; opacity:0.7;"></i>
+    </button>
+    <div id="branchFilterDropdown" style="display:none;position:absolute;right:0;top:calc(100% + 8px);width:270px;background:#fff;border:1px solid #cbd5e1;border-radius:10px;box-shadow:0 12px 28px rgba(15,23,42,0.15);z-index:100;padding:6px 0;">
+      <div style="padding:6px 14px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;">
+        <span>Filter by Hub Location</span>
+        <?php if ($branchFilter > 0): ?><a href="manage.php?status=<?= urlencode($statusFilter) ?>&cat=<?= urlencode($catFilter) ?>&per_page=<?= $perPage ?>" style="font-size:11px;color:#0284c7;text-decoration:none;">Reset</a><?php endif; ?>
+      </div>
+      <a href="manage.php?status=<?= urlencode($statusFilter) ?>&cat=<?= urlencode($catFilter) ?>&branch=all&per_page=<?= $perPage ?>" style="display:block;padding:8px 14px;font-size:13px;font-weight:600;color:#0f172a;text-decoration:none;<?= $branchFilter === 0 ? 'background:#f0f9ff;color:#0284c7;' : '' ?>">All 7 Hubs (Overall Fleet)</a>
+      <?php foreach ($allBranches as $b): ?>
+        <a href="manage.php?status=<?= urlencode($statusFilter) ?>&cat=<?= urlencode($catFilter) ?>&branch=<?= $b['id'] ?>&per_page=<?= $perPage ?>" style="display:block;padding:8px 14px;font-size:12px;font-weight:600;color:#0f172a;text-decoration:none;<?= $branchFilter == $b['id'] ? 'background:#f0f9ff;color:#0284c7;' : '' ?>">
+          <?= e($b['name']) ?> (<?= e($b['city']) ?>)
+        </a>
+      <?php endforeach; ?>
+    </div>
+  </div>
+
   <!-- + Add Vehicle Button -->
   <a href="<?= $A ?>vehicle_form.php" class="btn-add-vehicle" style="color: #ffffff !important;" title="Add a new vehicle to fleet">
     <i class="fa-solid fa-plus" style="color: #ffffff !important;"></i> Add Vehicle
@@ -145,10 +177,15 @@ $end = min($offset + $perPage, $totalVehicles);
       <div class="manage-card-media">
         <img src="<?= e(vehicle_image_url($v['image_path'] ?: $v['image_url'])) ?>" alt="<?= e($fullName) ?>" class="manage-card-img" loading="lazy">
         
-        <!-- Left Overlays: Category & Plate -->
+        <!-- Left Overlays: Category & Plate & Hub -->
         <div class="v-overlays-left">
           <span class="v-pill-class"><?= e($tagClass) ?></span>
           <span class="v-pill-plate"><?= e($plate) ?></span>
+          <?php if (!empty($v['branch_city'])): ?>
+            <span class="v-pill-branch" style="background:rgba(15,23,42,0.85); color:#fff; font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px; display:inline-flex; align-items:center; gap:3px;">
+              <i class="fa-solid fa-location-dot" style="color:#38bdf8;"></i> <?= e($v['branch_city']) ?>
+            </span>
+          <?php endif; ?>
         </div>
 
         <!-- Right Overlay: Posted / Not Posted Badge -->
@@ -424,6 +461,26 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!filterBtn.contains(e.target) && !filterDrop.contains(e.target)) {
                 filterDrop.style.display = 'none';
                 filterBtn.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+
+    // 3b. Branch Hub Filter Dropdown Toggle
+    const branchBtn = document.getElementById('branchFilterBtn');
+    const branchDrop = document.getElementById('branchFilterDropdown');
+    if (branchBtn && branchDrop) {
+        branchBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const isOpen = branchDrop.style.display === 'block';
+            branchDrop.style.display = isOpen ? 'none' : 'block';
+            branchBtn.setAttribute('aria-expanded', !isOpen);
+            if (filterDrop) filterDrop.style.display = 'none';
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!branchBtn.contains(e.target) && !branchDrop.contains(e.target)) {
+                branchDrop.style.display = 'none';
+                branchBtn.setAttribute('aria-expanded', 'false');
             }
         });
     }

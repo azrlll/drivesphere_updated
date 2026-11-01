@@ -40,14 +40,14 @@ $demoHistory = [
         'ref' => 'DS-RN-2026-0002',
         'code' => '#DSP-81093-PH',
         'vehicle_id' => 2,
-        'name' => 'Honda City 1.5 RS',
-        'image' => BASE_URL . 'assets/images/vehicles/honda-city.jpg',
+        'name' => 'Honda Civic RS Turbo',
+        'image' => BASE_URL . 'assets/images/vehicles/honda-civic.jpg',
         'badge' => 'Sedan',
         'status_type' => 'reserved',
         'status_pill' => 'Reserved',
         'status_pill_style' => 'background:#eff6ff; color:#2563eb;',
         'status_sub' => '&bull; Confirmed Security Deposit',
-        'spec' => 'Plate # NAK 5821 &bull; Executive Sport Sedan',
+        'spec' => 'Plate # NAK 5821 &bull; 4-Door Sport Sedan',
         'dates' => 'Dec 01, 2025 &ndash; Dec 04, 2025',
         'price_label' => 'Total Booking',
         'price' => '11,760.00',
@@ -136,6 +136,7 @@ if (!empty($dbRows)) {
             'status_pill' => $statusPill,
             'status_pill_style' => $statusPillStyle,
             'status_sub' => $statusSub,
+            'rejection_reason' => $r['rejection_reason'] ?? '',
             'spec' => 'Plate # ' . $r['plate_number'] . ' &bull; ' . ($r['category'] ?: ($r['category_name'] ?: 'Vehicle')),
             'dates' => date('M d, Y', strtotime($r['pickup_date'])) . ' &ndash; ' . date('M d, Y', strtotime($r['return_date'])),
             'price_label' => in_array($statusType, ['completed', 'returned']) ? 'Settled Amount' : 'Total Booking',
@@ -144,9 +145,11 @@ if (!empty($dbRows)) {
             'btn_label' => $btnLabel,
             'btn_url' => $btnUrl,
             'is_active_telemetry' => ($statusType === 'en_route'),
-            'bottom_left' => ($statusType === 'en_route')
-                ? '<i class="fa-solid fa-location-arrow" style="color:#0284c7"></i> Vehicle Telemetry: <b style="color:#0284c7">' . e($r['pickup_location']) . ' (En Route)</b>'
-                : '<i class="fa-solid fa-location-dot" style="color:#0284c7"></i> Pick-up Hub: ' . e($r['pickup_location']),
+            'bottom_left' => ($statusType === 'rejected')
+                ? '<i class="fa-solid fa-circle-exclamation" style="color:#dc2626"></i> Decline Reason: <b style="color:#dc2626">' . e($r['rejection_reason'] ?: 'Vehicle unavailable or schedule constraint.') . '</b>'
+                : (($statusType === 'en_route')
+                    ? '<i class="fa-solid fa-location-arrow" style="color:#0284c7"></i> Vehicle Telemetry: <b style="color:#0284c7">' . e($r['pickup_location']) . ' (En Route)</b>'
+                    : '<i class="fa-solid fa-location-dot" style="color:#0284c7"></i> Pick-up Hub: ' . e($r['pickup_location'])),
             'bottom_right' => 'Booking ID: #' . e($r['reference_code'])
         ];
     }
@@ -155,6 +158,14 @@ if (!empty($dbRows)) {
 }
 
 $totalRecordsCount = count($historyList);
+
+// Numbered pagination (Phase 11)
+$perPage = 5;
+$page = max(1, (int)($_GET['p'] ?? 1));
+$totalPages = max(1, (int)ceil($totalRecordsCount / $perPage));
+if ($page > $totalPages) $page = $totalPages;
+$offset = ($page - 1) * $perPage;
+$paginatedHistory = array_slice($historyList, $offset, $perPage);
 ?>
 
 <div class="hist-container">
@@ -181,7 +192,7 @@ $totalRecordsCount = count($historyList);
             </div>
             <div>
                 <div class="hist-stats-num"><?= $totalRecordsCount ?> Records</div>
-                <div class="hist-stats-sub">1 En Route &bull; 1 Upcoming</div>
+                <div class="hist-stats-sub"><?= $totalPages ?> Page<?= $totalPages > 1 ? 's' : '' ?> &bull; Active Fleet</div>
             </div>
         </div>
     </div>
@@ -190,7 +201,7 @@ $totalRecordsCount = count($historyList);
     <div class="hist-split-layout">
         <!-- ================= LEFT COLUMN: RENTAL CARDS ================= -->
         <div class="hist-cards-col">
-            <?php foreach ($historyList as $h): ?>
+            <?php foreach ($paginatedHistory as $h): ?>
                 <div class="hist-card <?= $h['is_active_telemetry'] ? 'active-telemetry' : '' ?>">
                     <div class="hist-card-main">
                         <!-- Media Thumbnail -->
@@ -212,6 +223,11 @@ $totalRecordsCount = count($historyList);
                             <div class="hist-card-dates">
                                 <i class="fa-regular fa-calendar"></i> <?= $h['dates'] ?>
                             </div>
+                            <?php if (!empty($h['rejection_reason'])): ?>
+                                <div style="margin-top: 6px; font-size: 11.5px; color: #dc2626; background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 4px 8px;">
+                                    <strong>Decline Reason:</strong> <?= e($h['rejection_reason']) ?>
+                                </div>
+                            <?php endif; ?>
                         </div>
 
                         <!-- Pricing & CTA Button -->
@@ -235,6 +251,34 @@ $totalRecordsCount = count($historyList);
                     </div>
                 </div>
             <?php endforeach; ?>
+
+            <!-- Numbered Pagination Bar (Phase 11) -->
+            <?php if ($totalPages > 1): ?>
+                <div class="manage-pagination-bar" style="margin-top: 20px; display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 12px 18px; border-radius: 10px; border: 1px solid #e2e8f0;">
+                    <div style="font-size: 13px; color: #64748b;">
+                        Showing page <b><?= $page ?></b> of <b><?= $totalPages ?></b> (<?= $totalRecordsCount ?> total bookings)
+                    </div>
+                    <div style="display: flex; gap: 6px;">
+                        <?php if ($page > 1): ?>
+                            <a href="?p=<?= $page - 1 ?>" class="btn-hist-action btn-hist-light" style="padding: 6px 12px; font-size: 12px;">
+                                &larr; Prev
+                            </a>
+                        <?php endif; ?>
+
+                        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                            <a href="?p=<?= $i ?>" class="btn-hist-action <?= $i === $page ? 'btn-hist-navy' : 'btn-hist-light' ?>" style="padding: 6px 12px; font-size: 12px;">
+                                <?= $i ?>
+                            </a>
+                        <?php endfor; ?>
+
+                        <?php if ($page < $totalPages): ?>
+                            <a href="?p=<?= $page + 1 ?>" class="btn-hist-action btn-hist-light" style="padding: 6px 12px; font-size: 12px;">
+                                Next &rarr;
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
         </div>
 
         <!-- ================= RIGHT COLUMN: TELEMETRY SIDEBAR ================= -->

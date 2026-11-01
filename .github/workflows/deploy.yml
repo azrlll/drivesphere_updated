@@ -1,0 +1,44 @@
+name: Deploy DriveSphere to InfinityFree
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Enables manual trigger from GitHub Actions UI
+
+jobs:
+  web-deploy:
+    name: FTP Deploy to InfinityFree
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🚚 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full git history ensures diff-based sync accurately tracks changes across commits
+
+      - name: 📂 Deploy via Secure FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: ${{ secrets.FTP_SERVER_DIR || '/drivesphere.free.nf/htdocs/' }}
+          protocol: ftp
+          port: 21
+          dangerous-clean-slate: false # Crucial: Never deletes remote files (protects live config and uploads)
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/.github/**
+            **/backups/**
+            **/scratch/**
+            **/scratch_profile/**
+            **/sql/**
+            **/*.sql
+            **/*.sql.bak
+            **/*.md
+            **/chk_v_img.php
+            **/includes/config.production.php
+            **/includes/config.local.php
+            **/uploads/**

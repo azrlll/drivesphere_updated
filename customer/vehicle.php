@@ -18,61 +18,99 @@ if (!$v) {
     }
 }
 
+// Fetch all active Philippine branches from database
+$allBranches = get_all_branches($pdo, true);
+$branchesByCode = [];
+$hubLabels = [];
+foreach ($allBranches as $bRow) {
+    $branchesByCode[$bRow['code']] = $bRow;
+    $hubLabels[$bRow['code']] = $bRow['name'];
+}
+if (empty($hubLabels)) {
+    $hubLabels = [
+        'bgc'     => 'Metro Manila - BGC Central Hub (Active)',
+        'mnl'     => "NAIA Airport Terminal 3 Hub - Pasay",
+        'makati'  => 'Makati CBD Hub (Ayala Center)',
+        'ortigas' => 'Ortigas Center Hub - Pasig',
+        'crk'     => "Clark Int'l Airport Hub (Pampanga)",
+        'ceb'     => 'Cebu City - Mactan Airport Hub',
+        'dvo'     => 'Davao City - Lanang Hub'
+    ];
+}
+
 // Hub & Location resolution
 $hubParam = $_GET['hub'] ?? $_GET['pickup_location'] ?? 'bgc';
-$hubLabels = [
-    'bgc'     => 'Metro Manila - BGC Hub (Active)',
-    'mnl'     => "Ninoy Aquino Int'l Airport (T3)",
-    'makati'  => 'Makati CBD Hub (Ayala Center)',
-    'ortigas' => 'Ortigas Center - Pasig Hub',
-    'crk'     => "Clark Int'l Airport Hub (Pampanga)",
-    'ceb'     => 'Cebu City - Mactan Airport Hub',
-    'dvo'     => 'Davao City - Lanang Hub'
-];
-$pickupLocationDisplay = $hubLabels[$hubParam] ?? (in_array($hubParam, $hubLabels) ? $hubParam : 'Metro Manila - BGC Hub (Active)');
+$pickupLocationDisplay = $hubLabels[$hubParam] ?? (in_array($hubParam, $hubLabels) ? $hubParam : reset($hubLabels));
+$currentBranch = get_branch_by_id_or_code($pdo, $hubParam) ?: get_branch_by_id_or_code($pdo, $v['branch_id'] ?? 1);
+$branchOpHours = $currentBranch['operating_hours'] ?? '8:00 AM – 8:00 PM';
 
 // Vehicle specific metadata / defaults matching Image mockup
 $fleetPlate = !empty($v['plate_number']) ? $v['plate_number'] : ('MNL-FT-' . str_pad($v['id'], 3, '0', STR_PAD_LEFT));
 $categoryClass = strtoupper($v['category_name'] ?? 'PREMIUM SUV CLASS');
 
-// Date parameters (default to next available 3-day rental slot)
+// Time parameters (Operating Hours: 08:00 to 20:00)
+$pickupTimeVal = $_GET['pickup_time'] ?? '09:00';
+$returnTimeVal = $_GET['return_time'] ?? '18:00';
+
+// Date parameters (default to next valid 48-72 hour advance slot, within 8 AM - 8 PM office hours)
 $pickupDateVal = $_GET['pickup_date'] ?? null;
 $returnDateVal = $_GET['return_date'] ?? null;
 
 if (!$pickupDateVal || !$returnDateVal) {
-    $testStart = strtotime('+2 days');
-    for ($i = 0; $i < 30; $i++) {
-        $candPickup = date('Y-m-d 09:00:00', strtotime("+$i days", $testStart));
-        $candReturn = date('Y-m-d 18:00:00', strtotime("+3 days", strtotime($candPickup)));
-        if (vehicle_is_available($pdo, $v['id'], $candPickup, $candReturn)) {
-            $pickupDateVal = date('Y-m-d', strtotime($candPickup));
-            $returnDateVal = date('Y-m-d', strtotime($candReturn));
-            break;
-        }
+    // 48-72 hours advance default (+2 days 09:00 AM)
+    $candPickupTime = strtotime('+52 hours');
+    // Ensure pickup hour is between 08:00 and 20:00
+    $candPickupHour = (int)date('G', $candPickupTime);
+    if ($candPickupHour < 8) {
+        $candPickupTime = strtotime(date('Y-m-d 09:00:00', $candPickupTime));
+    } elseif ($candPickupHour >= 20) {
+        $candPickupTime = strtotime(date('Y-m-d 09:00:00', strtotime('+1 day', $candPickupTime)));
     }
-    if (!$pickupDateVal) {
-        $pickupDateVal = date('Y-m-d', strtotime('+3 days'));
-        $returnDateVal = date('Y-m-d', strtotime('+6 days'));
+    
+    // Check if 48-72 hour window holds
+    $now = time();
+    $diffH = ($candPickupTime - $now) / 3600;
+    if ($diffH < 48) $candPickupTime = $now + (49 * 3600);
+    if ($diffH > 72) $candPickupTime = $now + (70 * 3600);
+    
+    $candPickupHour = (int)date('G', $candPickupTime);
+    if ($candPickupHour < 8 || $candPickupHour >= 20) {
+        $candPickupTime = strtotime(date('Y-m-d 10:00:00', $candPickupTime));
     }
+
+    $pickupDateVal = date('Y-m-d', $candPickupTime);
+    $pickupTimeVal = date('H:i', $candPickupTime);
+    
+    // Default return: +3 days at 18:00
+    $candReturnTime = strtotime('+3 days 18:00:00', strtotime($pickupDateVal));
+    $returnDateVal = date('Y-m-d', $candReturnTime);
+    $returnTimeVal = '18:00';
 }
 
-$pickupTime = strtotime($pickupDateVal);
-$returnTime = strtotime($returnDateVal);
+$pickupSql = date('Y-m-d H:i:s', strtotime($pickupDateVal . ' ' . $pickupTimeVal));
+$returnSql = date('Y-m-d H:i:s', strtotime($returnDateVal . ' ' . $returnTimeVal));
+
+$pickupTime = strtotime($pickupSql);
+$returnTime = strtotime($returnSql);
 if ($returnTime <= $pickupTime) {
-    $returnTime = strtotime('+3 days', $pickupTime);
+    $returnTime = strtotime('+3 days 18:00:00', $pickupTime);
     $returnDateVal = date('Y-m-d', $returnTime);
+    $returnTimeVal = '18:00';
+    $returnSql = date('Y-m-d H:i:s', $returnTime);
 }
-$days = max(1, (int)round(($returnTime - $pickupTime) / 86400));
-$dailyRate = (float)$v['daily_rate'];
-$subtotal = $days * $dailyRate;
-$lateFeeRate = $dailyRate * 0.10;
-$deposit = 5000.00;
-$total = $subtotal;
 
-// Initial server-side availability check
-$pickupSql = date('Y-m-d 09:00:00', $pickupTime);
-$returnSql = date('Y-m-d 18:00:00', $returnTime);
-$isInitiallyAvailable = vehicle_is_available($pdo, $v['id'], $pickupSql, $returnSql);
+$days = rental_days($pickupSql, $returnSql);
+$dailyRate = (float)$v['daily_rate'];
+$pricing = calc_price($dailyRate, $days);
+$subtotal = $pricing['base'];
+$lateFeeRate = $dailyRate * 0.10;
+$deposit = $pricing['deposit'];
+$total = $pricing['total'];
+
+// Initial server-side availability & policy check
+$schedCheck = validate_booking_schedule($pdo, $pickupSql, $returnSql, $currentBranch['id'] ?? 1);
+$isScheduleValid = $schedCheck['valid'];
+$isInitiallyAvailable = $isScheduleValid && vehicle_is_available($pdo, $v['id'], $pickupSql, $returnSql);
 
 // Image resolution - local downloaded vehicle photo
 $vehiclePhoto = vehicle_image_url($v['image_path'] ?: $v['image_url']);
@@ -149,21 +187,21 @@ $backLabel = str_contains($backUrl, 'browse') ? 'Back to Browse' : 'Back to Dash
                     <div class="key-spec-icon"><i class="fa-solid fa-door-closed"></i></div>
                     <div class="key-spec-text">
                         <span class="key-spec-lbl">DOORS</span>
-                        <span class="key-spec-val">5 Doors</span>
+                        <span class="key-spec-val"><?= (int)($v['passenger_doors'] ?? ($v['category'] === 'Sedan' ? 4 : 5)) ?> Doors</span>
                     </div>
                 </div>
                 <div class="key-spec-box">
                     <div class="key-spec-icon"><i class="fa-solid fa-gauge-high"></i></div>
                     <div class="key-spec-text">
                         <span class="key-spec-lbl">CONSUMPTION</span>
-                        <span class="key-spec-val">12.5 km/L</span>
+                        <span class="key-spec-val"><?= e($v['fuel_consumption'] ?? '14.5 km/L') ?></span>
                     </div>
                 </div>
                 <div class="key-spec-box">
                     <div class="key-spec-icon"><i class="fa-solid fa-dharmachakra"></i></div>
                     <div class="key-spec-text">
                         <span class="key-spec-lbl">TRANSMISSION</span>
-                        <span class="key-spec-val"><?= str_starts_with($v['transmission'], 'Automatic') ? 'Automatic' : e($v['transmission']) ?></span>
+                        <span class="key-spec-val"><?= e($v['transmission']) ?></span>
                     </div>
                 </div>
             </div>
@@ -178,35 +216,35 @@ $backLabel = str_contains($backUrl, 'browse') ? 'Back to Browse' : 'Back to Dash
                     <i class="fa-solid fa-palette v-overview-icon"></i>
                     <div class="v-overview-content">
                         <span class="v-overview-lbl">EXTERIOR COLOR</span>
-                        <span class="v-overview-val">Platinum White Pearl</span>
+                        <span class="v-overview-val"><?= e($v['exterior_color'] ?? 'Platinum White Pearl') ?></span>
                     </div>
                 </div>
                 <div class="v-overview-item">
                     <i class="fa-solid fa-couch v-overview-icon"></i>
                     <div class="v-overview-content">
                         <span class="v-overview-lbl">INTERIOR COLOR</span>
-                        <span class="v-overview-val">Dual-Tone Black &amp; Maroon Leather</span>
+                        <span class="v-overview-val"><?= e($v['interior_color'] ?? 'Dual-Tone Black & Charcoal') ?></span>
                     </div>
                 </div>
                 <div class="v-overview-item">
                     <i class="fa-solid fa-gauge-high v-overview-icon"></i>
                     <div class="v-overview-content">
                         <span class="v-overview-lbl">TRANSMISSION</span>
-                        <span class="v-overview-val"><?= e($v['transmission']) ?> with Paddle Shifters</span>
+                        <span class="v-overview-val"><?= e($v['transmission']) ?></span>
                     </div>
                 </div>
                 <div class="v-overview-item">
                     <i class="fa-solid fa-gears v-overview-icon"></i>
                     <div class="v-overview-content">
                         <span class="v-overview-lbl">ENGINE CAPACITY</span>
-                        <span class="v-overview-val">2.8L 4-Cylinder Turbo Diesel</span>
+                        <span class="v-overview-val"><?= e($v['engine_specs'] ?: ($v['specs_text'] ?: '1.5L 4-Cylinder DOHC')) ?></span>
                     </div>
                 </div>
                 <div class="v-overview-item">
                     <i class="fa-solid fa-gas-pump v-overview-icon"></i>
                     <div class="v-overview-content">
                         <span class="v-overview-lbl">FUEL TYPE</span>
-                        <span class="v-overview-val">Euro 4 Clean Diesel (80L Tank)</span>
+                        <span class="v-overview-val"><?= e($v['fuel_type']) ?></span>
                     </div>
                 </div>
                 <div class="v-overview-item">
@@ -310,46 +348,94 @@ $backLabel = str_contains($backUrl, 'browse') ? 'Back to Browse' : 'Back to Dash
                     </div>
                 </div>
 
-                <!-- Card 2: Rental Period Card -->
+                <!-- Card 2: Rental Period Card with Office Hours & Policy Notice -->
                 <div class="merged-card merged-period-card" style="margin-top: 18px;">
                     <div class="merged-period-head">
                         <div class="merged-card-title">
-                            <i class="fa-regular fa-calendar-days"></i> Rental Period
+                            <i class="fa-regular fa-calendar-days"></i> Rental Period &amp; Schedule
                         </div>
-                        <span class="merged-days-badge" id="daysBadge"><?= $days ?> Days Rental</span>
+                        <span class="merged-days-badge" id="daysBadge"><?= $days ?> Day<?= $days > 1 ? 's' : '' ?> Rental</span>
                     </div>
 
+                    <!-- Policy & Operating Hours Notice Banner (Phase 2 & 3) -->
+                    <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px 14px; font-size: 11.5px; line-height: 1.5; color: #1e40af;">
+                        <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; margin-bottom: 2px;">
+                            <i class="fa-solid fa-clock"></i> Official Office Hours: 8:00 AM – 8:00 PM (PST)
+                        </div>
+                        <div>
+                            <strong>Advance Booking Policy:</strong> Reservations must be made 48 to 72 hours before the scheduled pickup time. (Same-day pickup and return durations supported).
+                        </div>
+                    </div>
+
+                    <!-- Date & Time Grid -->
+                    <?php
+                    $timeSlots = [
+                        '08:00' => '08:00 AM', '08:30' => '08:30 AM', '09:00' => '09:00 AM', '09:30' => '09:30 AM',
+                        '10:00' => '10:00 AM', '10:30' => '10:30 AM', '11:00' => '11:00 AM', '11:30' => '11:30 AM',
+                        '12:00' => '12:00 PM', '12:30' => '12:30 PM', '13:00' => '01:00 PM', '13:30' => '01:30 PM',
+                        '14:00' => '02:00 PM', '14:30' => '02:30 PM', '15:00' => '03:00 PM', '15:30' => '03:30 PM',
+                        '16:00' => '04:00 PM', '16:30' => '04:30 PM', '17:00' => '05:00 PM', '17:30' => '05:30 PM',
+                        '18:00' => '06:00 PM', '18:30' => '06:30 PM', '19:00' => '07:00 PM', '19:30' => '07:30 PM',
+                        '20:00' => '08:00 PM'
+                    ];
+                    ?>
                     <div class="merged-dates-grid">
                         <div class="merged-date-cell">
                             <div class="merged-date-meta">
                                 <span class="date-lbl">Pick-up Date</span>
-                                <span class="time-lbl">09:00 AM Standard</span>
+                                <span class="time-lbl"><i class="fa-solid fa-business-time"></i> 8 AM – 8 PM</span>
                             </div>
-                            <div class="merged-date-input-wrap">
+                            <div class="merged-date-input-wrap" style="margin-bottom: 6px;">
                                 <input type="date" name="pickup_date" id="pickupDateInput" value="<?= e($pickupDateVal) ?>" required min="<?= date('Y-m-d') ?>">
                                 <i class="fa-regular fa-calendar"></i>
                             </div>
+                            <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #475569;">
+                                <span>Time:</span>
+                                <select name="pickup_time" id="pickupTimeSelect" style="background:#fff; border:1px solid #cbd5e1; border-radius:6px; padding:3px 6px; font-size:11.5px; font-weight:600; color:#0f172a; outline:none; width:100%;">
+                                    <?php foreach ($timeSlots as $tKey => $tLabel): ?>
+                                        <option value="<?= $tKey ?>" <?= ($pickupTimeVal === $tKey || substr($pickupTimeVal,0,5) === $tKey) ? 'selected' : '' ?>><?= $tLabel ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
                         </div>
+
                         <div class="merged-date-cell">
                             <div class="merged-date-meta">
                                 <span class="date-lbl">Return Date</span>
-                                <span class="time-lbl">06:00 PM Grace</span>
+                                <span class="time-lbl"><i class="fa-solid fa-business-time"></i> 8 AM – 8 PM</span>
                             </div>
-                            <div class="merged-date-input-wrap">
-                                <input type="date" name="return_date" id="returnDateInput" value="<?= e($returnDateVal) ?>" required min="<?= date('Y-m-d', strtotime('+1 day')) ?>">
+                            <div class="merged-date-input-wrap" style="margin-bottom: 6px;">
+                                <input type="date" name="return_date" id="returnDateInput" value="<?= e($returnDateVal) ?>" required min="<?= date('Y-m-d') ?>">
                                 <i class="fa-regular fa-calendar"></i>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #475569;">
+                                <span>Time:</span>
+                                <select name="return_time" id="returnTimeSelect" style="background:#fff; border:1px solid #cbd5e1; border-radius:6px; padding:3px 6px; font-size:11.5px; font-weight:600; color:#0f172a; outline:none; width:100%;">
+                                    <?php foreach ($timeSlots as $tKey => $tLabel): ?>
+                                        <option value="<?= $tKey ?>" <?= ($returnTimeVal === $tKey || substr($returnTimeVal,0,5) === $tKey) ? 'selected' : '' ?>><?= $tLabel ?></option>
+                                    <?php endforeach; ?>
+                                </select>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Hub / Branch Selection with Distance & Travel Time Estimate (Phase 4) -->
                     <div class="merged-hub-row">
                         <i class="fa-solid fa-location-dot" style="color: #0284c7;"></i>
                         <select name="pickup_location" id="pickupLocationSelect" class="merged-hub-select" required>
-                            <?php foreach ($hubLabels as $hKey => $hVal): ?>
-                                <option value="<?= e($hVal) ?>" <?= ($pickupLocationDisplay === $hVal || $hubParam === $hKey) ? 'selected' : '' ?>><?= e($hVal) ?></option>
+                            <?php foreach ($allBranches as $b): ?>
+                                <option value="<?= e($b['name']) ?>" data-code="<?= e($b['code']) ?>" data-hours="<?= e($b['operating_hours']) ?>" data-city="<?= e($b['city']) ?>" <?= ($pickupLocationDisplay === $b['name'] || $hubParam === $b['code']) ? 'selected' : '' ?>>
+                                    <?= e($b['name']) ?> (<?= e($b['city']) ?>) &bull; <?= e($b['operating_hours']) ?>
+                                </option>
                             <?php endforeach; ?>
                         </select>
                         <input type="hidden" name="return_location" id="returnLocationInput" value="<?= e($pickupLocationDisplay) ?>">
+                    </div>
+
+                    <!-- Travel Time & Distance Validation Hint -->
+                    <div id="travelTimeBox" style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 7px 10px; font-size: 11px; color: #475569; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-route" style="color: #0284c7;"></i>
+                        <span><strong>Estimated Travel:</strong> <span id="travelTimeEstimate">~25–40 mins</span> via city arterial roads. Ensure you arrive within operating hours (8 AM – 8 PM).</span>
                     </div>
                 </div>
 
@@ -359,11 +445,11 @@ $backLabel = str_contains($backUrl, 'browse') ? 'Back to Browse' : 'Back to Dash
                         <i class="fa-solid <?= $isInitiallyAvailable ? 'fa-circle-check' : 'fa-circle-xmark' ?>" id="availStatusIcon"></i>
                     </div>
                     <div class="avail-status-content">
-                        <strong id="availStatusTitle"><?= $isInitiallyAvailable ? 'Available for Selected Dates' : 'Unavailable for Selected Dates' ?></strong>
+                        <strong id="availStatusTitle"><?= $isInitiallyAvailable ? 'Available for Selected Dates' : ($isScheduleValid ? 'Unavailable for Selected Dates' : 'Scheduling Policy Notice') ?></strong>
                         <p id="availStatusDesc">
                             <?= $isInitiallyAvailable 
-                                ? 'Vehicle is verified in fleet stock and open for booking from ' . date('M d, Y', $pickupTime) . ' to ' . date('M d, Y', $returnTime) . '.'
-                                : 'Vehicle is currently reserved for part of these dates. Please choose different dates.' ?>
+                                ? 'Vehicle is verified in fleet stock and open for booking from ' . date('M d, Y g:i A', $pickupTime) . ' to ' . date('M d, Y g:i A', $returnTime) . '.'
+                                : ($isScheduleValid ? 'Vehicle is currently reserved for part of these dates. Please choose different dates.' : e($schedCheck['error'])) ?>
                         </p>
                     </div>
                 </div>
@@ -510,6 +596,42 @@ $backLabel = str_contains($backUrl, 'browse') ? 'Back to Browse' : 'Back to Dash
                         </div>
                     </div>
 
+                    <!-- Payment Method Selection (Phase 8) -->
+                    <div class="req-field" style="margin-top: 14px;">
+                        <div class="req-field-head">
+                            <label class="req-field-label">Preferred Payment Method</label>
+                            <span class="req-field-badge">Secured Settlement</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                            <label style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; gap: 8px; cursor: pointer; background: #f8fafc; font-size: 12px; font-weight: 600;">
+                                <input type="radio" name="payment_method" value="Cash on Pickup" checked onchange="togglePaymentRef(this.value)">
+                                <span><i class="fa-solid fa-money-bill-wave" style="color:#16a34a"></i> Cash on Pickup</span>
+                            </label>
+                            <label style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; gap: 8px; cursor: pointer; background: #f8fafc; font-size: 12px; font-weight: 600;">
+                                <input type="radio" name="payment_method" value="GCash" onchange="togglePaymentRef(this.value)">
+                                <span><i class="fa-solid fa-mobile-screen" style="color:#0284c7"></i> GCash</span>
+                            </label>
+                            <label style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; gap: 8px; cursor: pointer; background: #f8fafc; font-size: 12px; font-weight: 600;">
+                                <input type="radio" name="payment_method" value="Maya" onchange="togglePaymentRef(this.value)">
+                                <span><i class="fa-solid fa-wallet" style="color:#059669"></i> Maya</span>
+                            </label>
+                            <label style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; gap: 8px; cursor: pointer; background: #f8fafc; font-size: 12px; font-weight: 600;">
+                                <input type="radio" name="payment_method" value="Bank Transfer" onchange="togglePaymentRef(this.value)">
+                                <span><i class="fa-solid fa-building-columns" style="color:#475569"></i> Bank Transfer</span>
+                            </label>
+                        </div>
+
+                        <!-- Dynamic digital payment reference field -->
+                        <div id="digitalPaymentInfoBox" style="display: none; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px 12px; font-size: 11.5px; color: #166534; margin-top: 8px;">
+                            <div style="font-weight: 700; margin-bottom: 4px;" id="digitalPayTitle">GCash E-Wallet Payment:</div>
+                            <div style="margin-bottom: 6px;" id="digitalPayAccount">Account: <strong>0917-554-9021</strong> (DriveSphere Fleet Inc.)</div>
+                            <div class="req-input-box" style="margin-top: 4px;">
+                                <i class="fa-solid fa-receipt"></i>
+                                <input type="text" name="payment_reference" id="paymentReferenceInput" maxlength="50" placeholder="Enter Reference / Transaction No. (Optional for demonstration)">
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Request to Book Primary CTA -->
                     <button type="submit" class="btn-merged-book" id="btnRequestReservation" <?= !$isInitiallyAvailable ? 'disabled' : '' ?>>
                         <i class="fa-regular fa-paper-plane"></i> Request to Book Reservation
@@ -526,11 +648,36 @@ $backLabel = str_contains($backUrl, 'browse') ? 'Back to Browse' : 'Back to Dash
     </div>
 </div>
 
-<!-- Interactive Date, Price & Live Availability Check Script -->
+<!-- Interactive Date, Time, Payment & Live Availability Script -->
 <script>
+function togglePaymentRef(val) {
+    const box = document.getElementById('digitalPaymentInfoBox');
+    const title = document.getElementById('digitalPayTitle');
+    const acc = document.getElementById('digitalPayAccount');
+    if (!box) return;
+
+    if (val === 'Cash on Pickup') {
+        box.style.display = 'none';
+    } else {
+        box.style.display = 'block';
+        if (val === 'GCash') {
+            title.textContent = 'GCash E-Wallet Payment:';
+            acc.innerHTML = 'Account: <strong>0917-554-9021</strong> (DriveSphere Inc.)';
+        } else if (val === 'Maya') {
+            title.textContent = 'Maya E-Wallet Payment:';
+            acc.innerHTML = 'Account: <strong>0918-888-3748</strong> (DriveSphere Inc.)';
+        } else if (val === 'Bank Transfer') {
+            title.textContent = 'BDO / BPI Commercial Bank Transfer:';
+            acc.innerHTML = 'BDO Account: <strong>0012-3849-2018</strong> | BPI Account: <strong>4820-1928-33</strong>';
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const pickupInput = document.getElementById('pickupDateInput');
     const returnInput = document.getElementById('returnDateInput');
+    const pickupTimeInput = document.getElementById('pickupTimeSelect');
+    const returnTimeInput = document.getElementById('returnTimeSelect');
     const daysBadge = document.getElementById('daysBadge');
     const itemDays = document.getElementById('itemDays');
     const itemBaseSubtotal = document.getElementById('itemBaseSubtotal');
@@ -546,6 +693,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnSubmit = document.getElementById('btnRequestReservation');
     const locationSelect = document.getElementById('pickupLocationSelect');
     const returnLocationInput = document.getElementById('returnLocationInput');
+    const travelTimeBox = document.getElementById('travelTimeEstimate');
     const vehicleId = <?= (int)$v['id'] ?>;
     const dailyRate = <?= (float)$dailyRate ?>;
 
@@ -553,38 +701,54 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!pickupInput || !returnInput) return;
         const pVal = pickupInput.value;
         const rVal = returnInput.value;
+        const pTime = pickupTimeInput ? pickupTimeInput.value : '09:00';
+        const rTime = returnTimeInput ? returnTimeInput.value : '18:00';
+        const loc = locationSelect ? locationSelect.value : '';
+
         if (!pVal || !rVal) return;
 
-        const pDate = new Date(pVal);
-        const rDate = new Date(rVal);
-        let diffDays = Math.round((rDate - pDate) / (1000 * 60 * 60 * 24));
-        if (diffDays < 1) diffDays = 1;
+        const pFull = pVal + 'T' + pTime;
+        const rFull = rVal + 'T' + rTime;
+        const pDate = new Date(pFull);
+        const rDate = new Date(rFull);
+
+        let diffSecs = (rDate - pDate) / 1000;
+        let diffDays = Math.max(1, Math.ceil(diffSecs / 86400));
 
         const subtotal = diffDays * dailyRate;
+        const vat = subtotal * 0.12;
+        const total = subtotal + vat;
         const lateRate = dailyRate * 0.10;
 
         if (daysBadge) daysBadge.textContent = diffDays + ' Day' + (diffDays > 1 ? 's' : '') + ' Rental';
         if (itemDays) itemDays.textContent = diffDays;
         if (itemBaseSubtotal) itemBaseSubtotal.textContent = '₱' + subtotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         if (itemLateRate) itemLateRate.textContent = '+₱' + lateRate.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' / day';
-        if (netTotalVal) netTotalVal.textContent = '₱' + subtotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        if (netTotalVal) netTotalVal.textContent = '₱' + total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 
         // Set status box into querying mode
         if (availBox) {
             availBox.className = 'avail-status-box';
             if (availIcon) availIcon.className = 'fa-solid fa-circle-notch fa-spin';
-            if (availTitle) availTitle.textContent = 'Verifying availability...';
-            if (availDesc) availDesc.textContent = 'Querying live fleet database for ' + pVal + ' to ' + rVal + '...';
+            if (availTitle) availTitle.textContent = 'Verifying operating hours & availability...';
+            if (availDesc) availDesc.textContent = 'Validating 8 AM–8 PM office hours and 48–72h advance policy...';
         }
 
-        fetch('<?= BASE_URL ?>actions/check_availability.php?vehicle_id=' + vehicleId + '&pickup_date=' + encodeURIComponent(pVal) + '&return_date=' + encodeURIComponent(rVal))
+        const url = '<?= BASE_URL ?>actions/check_availability.php?vehicle_id=' + vehicleId +
+            '&pickup_date=' + encodeURIComponent(pVal) +
+            '&pickup_time=' + encodeURIComponent(pTime) +
+            '&return_date=' + encodeURIComponent(rVal) +
+            '&return_time=' + encodeURIComponent(rTime) +
+            '&pickup_location=' + encodeURIComponent(loc);
+
+        fetch(url)
             .then(res => res.json())
             .then(data => {
                 if (data.available) {
                     if (availBox) {
                         availBox.className = 'avail-status-box available';
                         if (availIcon) availIcon.className = 'fa-solid fa-circle-check';
-                        if (availTitle) availTitle.textContent = 'Available for Selected Dates';
+                        if (availTitle) availTitle.textContent = 'Available for Selected Schedule';
                         if (availDesc) availDesc.textContent = data.message;
                     }
                     if (topAvailBadge) {
@@ -602,16 +766,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (availBox) {
                         availBox.className = 'avail-status-box unavailable';
                         if (availIcon) availIcon.className = 'fa-solid fa-circle-xmark';
-                        if (availTitle) availTitle.textContent = 'Unavailable for Selected Dates';
+                        if (availTitle) availTitle.textContent = data.policy_error ? 'Booking Policy Restriction' : 'Unavailable for Selected Dates';
                         if (availDesc) availDesc.textContent = data.message;
                     }
                     if (topAvailBadge) {
                         topAvailBadge.className = 'merged-avail-badge unavailable';
-                        if (topAvailText) topAvailText.textContent = 'Reserved';
+                        if (topAvailText) topAvailText.textContent = data.policy_error ? 'Policy Restriction' : 'Reserved';
                     }
                     if (leftStatusPill) {
                         leftStatusPill.className = 'v-status-pill reserved';
-                        leftStatusPill.innerHTML = '<span class="dot"></span> Reserved';
+                        leftStatusPill.innerHTML = '<span class="dot"></span> ' + (data.policy_error ? 'Policy Notice' : 'Reserved');
                     }
                     if (btnSubmit) {
                         btnSubmit.disabled = true;
@@ -632,20 +796,35 @@ document.addEventListener('DOMContentLoaded', function() {
     if (locationSelect && returnLocationInput) {
         locationSelect.addEventListener('change', function() {
             returnLocationInput.value = this.value;
+            // Update travel estimate based on city
+            const opt = this.options[this.selectedIndex];
+            const city = opt ? opt.getAttribute('data-city') : '';
+            if (travelTimeBox) {
+                if (city.includes('Manila') || city.includes('Taguig') || city.includes('Pasay') || city.includes('Makati')) {
+                    travelTimeBox.textContent = '~20–35 mins via C-5 / EDSA / Skyway';
+                } else if (city.includes('Pampanga') || city.includes('Angeles')) {
+                    travelTimeBox.textContent = '~1h 15m via NLEX / SCTEX';
+                } else if (city.includes('Cebu') || city.includes('Lapu')) {
+                    travelTimeBox.textContent = '~25–40 mins via CCLEX / Mactan Causeway';
+                } else {
+                    travelTimeBox.textContent = '~30–45 mins via City Arterial Route';
+                }
+            }
+            recalculateAndCheck();
         });
     }
 
     if (pickupInput && returnInput) {
         pickupInput.addEventListener('change', function() {
-            if (new Date(returnInput.value) <= new Date(pickupInput.value)) {
-                const nextDay = new Date(pickupInput.value);
-                nextDay.setDate(nextDay.getDate() + 3);
-                returnInput.value = nextDay.toISOString().split('T')[0];
+            if (new Date(returnInput.value) < new Date(pickupInput.value)) {
+                returnInput.value = pickupInput.value;
             }
             recalculateAndCheck();
         });
         returnInput.addEventListener('change', recalculateAndCheck);
     }
+    if (pickupTimeInput) pickupTimeInput.addEventListener('change', recalculateAndCheck);
+    if (returnTimeInput) returnTimeInput.addEventListener('change', recalculateAndCheck);
 });
 </script>
 

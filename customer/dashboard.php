@@ -333,7 +333,7 @@ unset($catData);
 <div id="noBrowseResults" class="no-results-box" style="display: none; margin: 30px 0; text-align: center; padding: 48px 24px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px;">
     <i class="fa-solid fa-car-tunnel" style="font-size: 38px; color: #94a3b8; margin-bottom: 14px;"></i>
     <h3 style="font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 6px;">No vehicles match your search</h3>
-    <p style="font-size: 14px; color: #64748b; margin-bottom: 18px;">Try adjusting your keyword or reset filters to browse our 30 fleet vehicles.</p>
+    <p style="font-size: 14px; color: #64748b; margin-bottom: 18px;">Try adjusting your keyword or reset filters to browse our full fleet of vehicles.</p>
     <a href="dashboard.php" class="btn btn-primary" style="display: inline-block; padding: 10px 20px; border-radius: 8px; background: #0284c7; color: #fff; font-weight: 700; text-decoration: none;">Reset All Filters</a>
 </div>
 

@@ -23,6 +23,7 @@
             <h4>LEGAL &amp; COMPLIANCE</h4>
             <ul>
                 <li><a href="<?= BASE_URL ?>policies.php">Privacy Policy</a></li>
+                <li><a href="<?= BASE_URL ?>admin/login.php" style="opacity:0.85;">Admin Portal</a></li>
             </ul>
         </div>
         <div class="footer-col">

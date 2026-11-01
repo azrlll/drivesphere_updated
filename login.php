@@ -82,6 +82,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <?php flash_show(); ?>
 
+            <?php if (!empty($_GET['redirect']) || ($redirectTarget !== 'customer/dashboard.php')): ?>
+                <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-left: 4px solid #0284c7; border-radius: 8px; padding: 12px 14px; margin-bottom: 20px; font-size: 13px; color: #1e3a8a; display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-solid fa-circle-info" style="color: #0284c7; font-size: 16px; flex-shrink: 0;"></i>
+                    <span>Please log in to your DriveSphere customer account to complete your reservation.</span>
+                </div>
+            <?php endif; ?>
+
             <?php if (is_customer()): ?>
                 <div style="background: #e0f2fe; border: 1px solid #7dd3fc; border-radius: 8px; padding: 10px 14px; margin-bottom: 20px; font-size: 12px; color: #0369a1; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
                     <div>

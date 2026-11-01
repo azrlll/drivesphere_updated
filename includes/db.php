@@ -13,7 +13,12 @@ function getDBConnection() {
             ];
             $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
         } catch (PDOException $e) {
-            die("Database connection failed. Start MySQL in XAMPP and import sql/drivesphere.sql in phpMyAdmin. (" . $e->getMessage() . ")");
+            error_log("DriveSphere Database Connection Error: " . $e->getMessage());
+            if (ini_get('display_errors')) {
+                die("Database connection failed. Start MySQL in XAMPP and import sql/drivesphere.sql in phpMyAdmin. (" . $e->getMessage() . ")");
+            } else {
+                die("Database connection failed. Please ensure the database service is available.");
+            }
         }
     }
     return $pdo;

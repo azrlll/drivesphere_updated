@@ -282,6 +282,104 @@ function add_notification($pdo, $userId, $audience, $type, $title, $message, $li
     $s->execute([$userId, $audience, $type, $title, $message, $link]);
 }
 
+/* ---------- system settings & branches ---------- */
+function get_system_setting($pdo, $key, $default = null) {
+    static $settingsCache = [];
+    if (!isset($settingsCache[$key])) {
+        try {
+            $st = $pdo->prepare("SELECT setting_value FROM system_settings WHERE setting_key = ?");
+            $st->execute([$key]);
+            $val = $st->fetchColumn();
+            $settingsCache[$key] = ($val !== false) ? $val : $default;
+        } catch (Exception $e) {
+            $settingsCache[$key] = $default;
+        }
+    }
+    return $settingsCache[$key];
+}
+
+function get_all_branches($pdo, $activeOnly = true) {
+    try {
+        $sql = "SELECT * FROM branches" . ($activeOnly ? " WHERE is_active = 1" : "") . " ORDER BY id ASC";
+        return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        return [];
+    }
+}
+
+function get_branch_by_id_or_code($pdo, $idOrCode) {
+    try {
+        if (is_numeric($idOrCode)) {
+            $st = $pdo->prepare("SELECT * FROM branches WHERE id = ?");
+            $st->execute([(int)$idOrCode]);
+        } else {
+            $st = $pdo->prepare("SELECT * FROM branches WHERE code = ? OR name = ?");
+            $st->execute([$idOrCode, $idOrCode]);
+        }
+        return $st->fetch(PDO::FETCH_ASSOC) ?: null;
+    } catch (Exception $e) {
+        return null;
+    }
+}
+
+/* ---------- office hours & advance reservation policy validation ---------- */
+function validate_booking_schedule($pdo, $pickupDateTime, $returnDateTime, $branchIdOrCode = null) {
+    $now = time();
+    $pickupTime = strtotime($pickupDateTime);
+    $returnTime = strtotime($returnDateTime);
+
+    if (!$pickupTime || !$returnTime) {
+        return ['valid' => false, 'error' => 'Please provide valid pick-up and return dates and times.'];
+    }
+
+    if ($returnTime <= $pickupTime) {
+        return ['valid' => false, 'error' => 'Return date and time must be after the pick-up date and time.'];
+    }
+
+    // 1. Past date & time validation (Phase 2A)
+    if ($pickupTime < $now) {
+        return ['valid' => false, 'error' => 'Pick-up date and time cannot be in the past.'];
+    }
+
+    // 2. Branch operating hours (Phase 2A - 8:00 AM to 8:00 PM PST)
+    $branch = $branchIdOrCode ? get_branch_by_id_or_code($pdo, $branchIdOrCode) : null;
+    $openStr = $branch ? $branch['opening_time'] : (get_system_setting($pdo, 'office_hours_start', '08:00') . ':00');
+    $closeStr = $branch ? $branch['closing_time'] : (get_system_setting($pdo, 'office_hours_end', '20:00') . ':00');
+    $opHoursLabel = $branch ? $branch['operating_hours'] : '8:00 AM – 8:00 PM';
+
+    $pickupTimeOfDay = date('H:i:s', $pickupTime);
+    $returnTimeOfDay = date('H:i:s', $returnTime);
+
+    if ($pickupTimeOfDay < $openStr || $pickupTimeOfDay > $closeStr) {
+        return ['valid' => false, 'error' => "Pick-up time must be within official operating hours ($opHoursLabel)."];
+    }
+    if ($returnTimeOfDay < $openStr || $returnTimeOfDay > $closeStr) {
+        return ['valid' => false, 'error' => "Return time must be within official operating hours ($opHoursLabel)."];
+    }
+
+    // 3. Minimum one-hour lead time before pickup (Phase 2B)
+    $leadMinHours = (float)get_system_setting($pdo, 'lead_time_min_hours', 1);
+    $diffFromNowSeconds = $pickupTime - $now;
+    if ($diffFromNowSeconds < ($leadMinHours * 3600)) {
+        return ['valid' => false, 'error' => 'Please select a pickup time at least one hour from now.'];
+    }
+
+    // 4. Confirmed 48–72-Hour Advance Reservation Policy (Phase 3)
+    $advMinHours = (float)get_system_setting($pdo, 'advance_min_hours', 48);
+    $advMaxHours = (float)get_system_setting($pdo, 'advance_max_hours', 72);
+    $diffHours = $diffFromNowSeconds / 3600;
+
+    if ($diffHours < $advMinHours || $diffHours > $advMaxHours) {
+        $leadStr = round($diffHours, 1);
+        return [
+            'valid' => false,
+            'error' => "Advance Booking Notice: Reservations must be made $advMinHours to $advMaxHours hours before the scheduled pickup time. (Selected pickup is $leadStr hours from right now). Note: Same-day rental durations (e.g. 8 AM to 6 PM) are fully supported when booked at least {$advMinHours} hours in advance."
+        ];
+    }
+
+    return ['valid' => true, 'error' => null];
+}
+
 /* ---------- status badges ---------- */
 function status_label($status) {
     $map = ['pending' => 'Pending', 'reserved' => 'Reserved', 'en_route' => 'En Route',

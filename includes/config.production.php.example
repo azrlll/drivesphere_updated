@@ -1,0 +1,12 @@
+<?php
+// ---------------------------------------------------------------
+// DriveSphere Production Database Configuration Template
+// ---------------------------------------------------------------
+// Copy this file to 'config.production.php' on your production server.
+// Do NOT commit real credentials to Git.
+// ---------------------------------------------------------------
+
+define('DB_HOST', 'sql112.infinityfree.com');
+define('DB_NAME', 'your_database_name');
+define('DB_USER', 'your_database_username');
+define('DB_PASS', 'your_database_password');
