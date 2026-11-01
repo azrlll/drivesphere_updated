@@ -3355,4 +3355,595 @@
    white-space: nowrap;
    display: inline-flex;
    align-items: center;
-}  
+}
+
+/* ==========================================================================
+   CUSTOMER AUTHENTICATION & CONFIRMATION REDESIGN (Exact Mockup Match)
+   ========================================================================== */
+.auth-page-body {
+    background-color: #f1f5f9;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    color: #0f172a;
+}
+
+.auth-header {
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 16px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.auth-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.auth-brand-logo {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: block;
+    object-fit: cover;
+}
+
+.auth-brand-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.auth-brand-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.15;
+    letter-spacing: -0.3px;
+}
+
+.auth-brand-sub {
+    font-size: 8.5px;
+    font-weight: 700;
+    color: #64748b;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-top: 2px;
+}
+
+.auth-nav-right {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.auth-nav-link {
+    font-size: 13px;
+    font-weight: 500;
+    color: #64748b;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.auth-nav-link:hover {
+    color: #0284c7;
+}
+
+.auth-nav-divider {
+    color: #cbd5e1;
+    font-size: 13px;
+    user-select: none;
+}
+
+.auth-portal-pill {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    color: #0284c7;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 9999px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.15s ease;
+}
+
+.auth-portal-pill:hover {
+    background: #e0f2fe;
+}
+
+.auth-main-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 44px 20px;
+    box-sizing: border-box;
+}
+
+.auth-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 24px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+    padding: 40px 42px;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.auth-card-login {
+    max-width: 460px;
+}
+
+.auth-card-register {
+    max-width: 480px;
+}
+
+.auth-card-confirm {
+    max-width: 440px;
+    padding: 44px 42px;
+}
+
+.auth-pill-badge {
+    background: #e0f2fe;
+    color: #0284c7;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 9999px;
+    display: inline-block;
+}
+
+.auth-card-title {
+    font-size: 26px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    margin: 14px 0 8px 0;
+}
+
+.auth-card-sub {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #64748b;
+    margin: 0 0 24px 0;
+}
+
+.auth-field-group {
+    margin-bottom: 18px;
+}
+
+.auth-label {
+    display: block;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: #475569;
+    margin-bottom: 6px;
+}
+
+.auth-req {
+    color: #ef4444;
+}
+
+.auth-input-wrapper {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    transition: border-color 0.15s, background-color 0.15s;
+    box-sizing: border-box;
+}
+
+.auth-input-wrapper:focus-within {
+    border-color: #0284c7;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+}
+
+.auth-input-icon {
+    color: #94a3b8;
+    font-size: 14px;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+.auth-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 100%;
+    font-size: 13.5px;
+    color: #0f172a;
+    font-family: inherit;
+}
+
+.auth-input::placeholder {
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+.auth-eye-icon {
+    color: #94a3b8;
+    font-size: 14px;
+    cursor: pointer;
+    margin-left: 8px;
+    flex-shrink: 0;
+    transition: color 0.15s;
+}
+
+.auth-eye-icon:hover {
+    color: #0f172a;
+}
+
+.auth-2col-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.auth-checkbox-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 24px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: #64748b;
+}
+
+.auth-checkbox-row input[type='checkbox'] {
+    margin-top: 3px;
+    width: 15px;
+    height: 15px;
+    accent-color: #0284c7;
+    border-radius: 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.auth-checkbox-row label {
+    cursor: pointer;
+}
+
+.auth-link {
+    color: #0284c7;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.auth-link:hover {
+    text-decoration: underline;
+}
+
+.auth-btn-dark {
+    background: #0f172a;
+    color: #ffffff !important;
+    width: 100%;
+    border: none;
+    border-radius: 8px;
+    height: 48px;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    box-sizing: border-box;
+    text-decoration: none;
+}
+
+.auth-btn-dark:hover {
+    background: #1e293b;
+    color: #ffffff !important;
+}
+
+.auth-card-footer {
+    text-align: center;
+    font-size: 12.5px;
+    color: #64748b;
+    margin-top: 24px;
+    white-space: nowrap;
+}
+
+.auth-page-footer {
+    padding: 24px 48px;
+    font-size: 11px;
+    color: #94a3b8;
+    box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+    .auth-header {
+        padding: 14px 20px;
+    }
+    .auth-card {
+        padding: 28px 20px;
+    }
+    .auth-2col-row {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+    .auth-card-footer {
+        white-space: normal;
+    }
+    .auth-page-footer {
+        padding: 20px;
+    }
+}
+
+/* ==========================================================================
+   ADMIN AUTHENTICATION & CONFIRMATION REDESIGN (Exact Mockup Match)
+   ========================================================================== */
+.admin-auth-body {
+    background-color: #f8fafc;
+    background-image: radial-gradient(circle at 85% 65%, #edf0ff 0%, #faf8ff 45%, #fcfbfe 100%);
+    background-attachment: fixed;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    color: #0f172a;
+}
+
+.admin-auth-header {
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 16px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.admin-header-brand-wrap {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.admin-header-logo-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.admin-header-logo-img {
+    height: 32px;
+    width: 32px;
+    object-fit: cover;
+    border-radius: 6px;
+    display: block;
+}
+
+.admin-header-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-header-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-header-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.15;
+    letter-spacing: -0.3px;
+}
+
+.admin-enterprise-pill {
+    background: #eaedff;
+    border: 1px solid #dcdffe;
+    font-size: 9.5px;
+    font-weight: 700;
+    color: #475569;
+    padding: 2px 7px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1;
+}
+
+.admin-header-sub {
+    font-size: 9px;
+    font-weight: 600;
+    color: #64748b;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+}
+
+.admin-portal-gateway-btn {
+    background: #eaedff;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #0f172a;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+    text-align: center;
+    transition: background 0.15s ease;
+}
+
+.admin-portal-gateway-btn:hover {
+    background: #dde2ff;
+}
+
+.admin-header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.admin-command-text {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-command-title {
+    font-size: 10px;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.admin-command-sub {
+    font-size: 10.5px;
+    font-weight: 500;
+    color: #64748b;
+}
+
+.admin-help-btn {
+    background: #f2f3ff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #0f172a;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.15s ease;
+}
+
+.admin-help-btn:hover {
+    background: #eaedff;
+}
+
+.admin-user-avatar-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #0f172a;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 13px;
+    transition: background 0.15s ease;
+}
+
+.admin-user-avatar-btn:hover {
+    background: #1e293b;
+}
+
+.admin-auth-card {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.02);
+    padding: 40px 42px;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.admin-auth-card-login {
+    max-width: 460px;
+}
+
+.admin-auth-card-register {
+    max-width: 490px;
+}
+
+.admin-auth-card-confirm {
+    max-width: 440px;
+    padding: 44px 42px;
+}
+
+.admin-auth-pill-badge {
+    background: #f1f3ff;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 9999px;
+    display: inline-block;
+}
+
+.admin-input-wrapper {
+    background: #f2f3ff;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    transition: background-color 0.15s, border-color 0.15s;
+    box-sizing: border-box;
+}
+
+.admin-input-wrapper:focus-within {
+    background: #ffffff;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+.admin-info-box {
+    background: #f2f3ff;
+    border: none;
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin: 22px 0;
+    text-align: left;
+    font-size: 12px;
+}
+
+.admin-auth-footer {
+    background: #ffffff;
+    border-top: 1px solid #e2e8f0;
+    padding: 36px 48px 24px;
+    margin-top: auto;
+    box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+    .admin-auth-header {
+        padding: 14px 20px;
+    }
+    .admin-auth-card {
+        padding: 28px 20px;
+    }
+    .admin-auth-footer {
+        padding: 24px 20px;
+    }
+}

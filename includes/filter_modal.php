@@ -21,7 +21,7 @@
     $activeMinPrice = !empty($_GET['min_price']) ? (int)$_GET['min_price'] : 1500;
     $activeMaxPrice = !empty($_GET['max_price']) ? (int)$_GET['max_price'] : 6000;
     $activeBrand = $_GET['brand'] ?? 'all';
-    $activeHub = $_GET['hub'] ?? $_GET['location'] ?? 'bgc';
+    $activeHub = $_GET['hub'] ?? $_GET['location'] ?? '';
     $activeQ = $_GET['q'] ?? '';
 
     // Calculate percentage fill for initial track styling

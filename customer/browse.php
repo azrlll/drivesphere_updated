@@ -17,7 +17,6 @@ if ($filterType !== 'all') $activeFilters++;
 if ($filterTrans !== 'all') $activeFilters++;
 if ($filterBrand !== 'all') $activeFilters++;
 if ($filterMinPrice > 0 || $filterMaxPrice > 0) $activeFilters++;
-if ($activeFilters === 0) $activeFilters = 1; // Default 1 (Metro Manila / Location active)
 
 // Fetch available vehicles dynamically from MySQL matching active filters
 $where = ["v.status = 'available'"];
@@ -80,7 +79,6 @@ foreach ($dbFeatured as $row) {
         <input type="text" name="q" id="browseSearchInput" value="<?= e($q) ?>" placeholder="Search by model, brand, or location..." autocomplete="off">
     </div>
 
-    <?php include __DIR__ . '/../includes/location_selector.php'; ?>
 
     <div class="filter-chip-btn" id="filterToggleBtn" title="Active Filter Criteria">
         <i class="fa-solid fa-sliders"></i>

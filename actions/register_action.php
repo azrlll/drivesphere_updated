@@ -46,7 +46,7 @@ $last  = $parts[1] ?? '-';
 $insert = $pdo->prepare("INSERT INTO users (first_name, last_name, email, password, role) VALUES (?, ?, ?, ?, 'customer')");
 $insert->execute([$first, $last, $email, password_hash($password, PASSWORD_DEFAULT)]);
 
-$user = ['id' => $pdo->lastInsertId(), 'first_name' => $first, 'last_name' => $last, 'email' => $email, 'role' => 'customer'];
-login_user($user);
-flash_set('success', 'Welcome to DriveSphere! Your account has been created.');
-redirect($redirectTarget);
+$userId = $pdo->lastInsertId();
+$_SESSION['registered_email'] = $email;
+$confirmUrl = 'register_confirm.php' . ($redirectTarget !== 'customer/dashboard.php' ? '?redirect=' . urlencode($redirectTarget) : '');
+redirect($confirmUrl);

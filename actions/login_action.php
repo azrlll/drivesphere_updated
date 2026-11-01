@@ -20,13 +20,16 @@ $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? LIMIT 1");
 $stmt->execute([$email]);
 $user = $stmt->fetch();
 
+$redirectTarget = get_safe_redirect('redirect', 'customer/dashboard.php');
 if ($user && password_verify($password, $user['password'])) {
     login_user($user);
     if (($user['role'] ?? '') === 'admin') {
         flash_set('info', 'Welcome, Administrator.');
-        redirect('admin/dashboard.php');
+        $adminTarget = get_safe_redirect('redirect', 'admin/dashboard.php');
+        redirect($adminTarget);
     } else {
-        redirect('customer/dashboard.php');
+        $confirmUrl = 'login_confirm.php' . ($redirectTarget !== 'customer/dashboard.php' ? '?redirect=' . urlencode($redirectTarget) : '');
+        redirect($confirmUrl);
     }
 }
 
