@@ -213,7 +213,7 @@ $currentMonthLabel = date('F Y');
       $specStr = $v['category'] . ' · ' . $v['transmission'];
       $statusColor = $v['status'] === 'available' ? '#0d9488' : ($v['status'] === 'rented' ? '#0284c7' : '#dc2626');
     ?>
-      <a href="<?= $A ?>manage.php?q=<?= urlencode($v['model']) ?>" class="adm-vehicle-card" title="Manage <?= e($fullName) ?> in fleet catalog">
+      <a href="<?= $A ?>manage.php?vehicle_id=<?= (int)$v['id'] ?>&q=<?= urlencode($v['model']) ?>" class="adm-vehicle-card" title="Manage <?= e($fullName) ?> in fleet catalog">
         <div class="adm-card-media" style="position:relative;">
           <img src="<?= e($vehicleImg) ?>" alt="<?= e($fullName) ?>" loading="lazy">
           <span style="position:absolute; top:8px; left:8px; background:rgba(15,23,42,0.85); color:#ffffff; font-size:10px; font-weight:800; padding:2px 7px; border-radius:6px; backdrop-filter:blur(4px);">

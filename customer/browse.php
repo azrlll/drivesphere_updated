@@ -99,20 +99,23 @@ if ($filterBranch > 0) {
     $params['fbranch'] = $filterBranch;
 }
 if ($filterType !== 'all') {
-    $where[] = "(LOWER(c.slug) = :ftype OR LOWER(v.category) = :ftype)";
-    $params['ftype'] = strtolower($filterType);
+    $where[] = "(LOWER(c.slug) = :ftype1 OR LOWER(v.category) = :ftype2)";
+    $params['ftype1'] = strtolower($filterType);
+    $params['ftype2'] = strtolower($filterType);
 }
 if ($filterTrans !== 'all') {
     $where[] = "LOWER(v.transmission) LIKE :ftrans";
     $params['ftrans'] = '%' . strtolower($filterTrans) . '%';
 }
 if ($filterSeats > 0) {
-    $where[] = "(v.seating_capacity >= :fseats OR v.seats >= :fseats)";
-    $params['fseats'] = $filterSeats;
+    $where[] = "(v.seating_capacity >= :fseats1 OR v.seats >= :fseats2)";
+    $params['fseats1'] = $filterSeats;
+    $params['fseats2'] = $filterSeats;
 }
 if ($filterBrand !== 'all') {
-    $where[] = "(v.brand = :fbrand OR v.make = :fbrand)";
-    $params['fbrand'] = $filterBrand;
+    $where[] = "(v.brand = :fbrand1 OR v.make = :fbrand2)";
+    $params['fbrand1'] = $filterBrand;
+    $params['fbrand2'] = $filterBrand;
 }
 if ($filterMinPrice > 0) {
     $where[] = "v.daily_rate >= :fmin";
@@ -123,40 +126,56 @@ if ($filterMaxPrice > 0) {
     $params['fmax'] = $filterMaxPrice;
 }
 if ($q !== '') {
-    $where[] = "(v.model LIKE :fq OR v.brand LIKE :fq OR v.make LIKE :fq OR v.description LIKE :fq OR b.name LIKE :fq OR b.city LIKE :fq)";
-    $params['fq'] = '%' . $q . '%';
+    $where[] = "(v.model LIKE :fq1 OR v.brand LIKE :fq2 OR v.make LIKE :fq3 OR v.description LIKE :fq4 OR b.name LIKE :fq5 OR b.city LIKE :fq6)";
+    $likeQ = '%' . $q . '%';
+    $params['fq1'] = $likeQ;
+    $params['fq2'] = $likeQ;
+    $params['fq3'] = $likeQ;
+    $params['fq4'] = $likeQ;
+    $params['fq5'] = $likeQ;
+    $params['fq6'] = $likeQ;
 }
 
 $whereSql = implode(' AND ', $where);
 
-// Count total matching for pagination
-$countStmt = $pdo->prepare("SELECT COUNT(*) FROM vehicles v 
-                            JOIN categories c ON v.category_id = c.id 
-                            LEFT JOIN branches b ON v.branch_id = b.id
-                            WHERE $whereSql");
-$countStmt->execute($params);
-$totalMatching = (int)$countStmt->fetchColumn();
+try {
+    // Count total matching for pagination
+    $countStmt = $pdo->prepare("SELECT COUNT(*) FROM vehicles v 
+                                JOIN categories c ON v.category_id = c.id 
+                                LEFT JOIN branches b ON v.branch_id = b.id
+                                WHERE $whereSql");
+    $countStmt->execute($params);
+    $totalMatching = (int)$countStmt->fetchColumn();
 
-// Numbered pagination calculation (Phase 11: 8 vehicles per page)
-$perPage = 8;
-$totalPages = max(1, (int)ceil($totalMatching / $perPage));
-$page = max(1, min($totalPages, (int)($_GET['page'] ?? 1)));
-$offset = ($page - 1) * $perPage;
+    // Numbered pagination calculation (Phase 11: 8 vehicles per page)
+    $perPage = 8;
+    $totalPages = max(1, (int)ceil($totalMatching / $perPage));
+    $page = max(1, min($totalPages, (int)($_GET['page'] ?? 1)));
+    $offset = ($page - 1) * $perPage;
 
-$st = $pdo->prepare("SELECT v.*, c.name AS category_name, b.name AS branch_name, b.city AS branch_city 
-                    FROM vehicles v 
-                    JOIN categories c ON v.category_id = c.id 
-                    LEFT JOIN branches b ON v.branch_id = b.id
-                    WHERE $whereSql 
-                    ORDER BY v.id ASC 
-                    LIMIT :limit OFFSET :offset");
-foreach ($params as $k => $val) {
-    $st->bindValue(':' . $k, $val);
+    $st = $pdo->prepare("SELECT v.*, c.name AS category_name, b.name AS branch_name, b.city AS branch_city 
+                        FROM vehicles v 
+                        JOIN categories c ON v.category_id = c.id 
+                        LEFT JOIN branches b ON v.branch_id = b.id
+                        WHERE $whereSql 
+                        ORDER BY v.id ASC 
+                        LIMIT :limit OFFSET :offset");
+    foreach ($params as $k => $val) {
+        $st->bindValue(':' . $k, $val);
+    }
+    $st->bindValue(':limit', $perPage, PDO::PARAM_INT);
+    $st->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $st->execute();
+    $dbFeatured = $st->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    error_log("DriveSphere Customer Browse Query Error: " . $e->getMessage());
+    $totalMatching = 0;
+    $perPage = 8;
+    $totalPages = 1;
+    $page = 1;
+    $offset = 0;
+    $dbFeatured = [];
 }
-$st->bindValue(':limit', $perPage, PDO::PARAM_INT);
-$st->bindValue(':offset', $offset, PDO::PARAM_INT);
-$st->execute();
-$dbFeatured = $st->fetchAll(PDO::FETCH_ASSOC);
 
 $start = $totalMatching > 0 ? ($offset + 1) : 0;
 $end = min($offset + $perPage, $totalMatching);

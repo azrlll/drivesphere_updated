@@ -193,119 +193,157 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ==========================================================================
     5. HELP & FAQ ACCORDION LOGIC
     ========================================================================== */
-    const accordions = document.querySelectorAll('.accordion-header');
-    if (accordions.length > 0) {
-        accordions.forEach(acc => {
-            acc.addEventListener('click', () => {
-                const item = acc.closest('.accordion-item');
-                if (!item) return;
-                const icon = item.querySelector('.toggle-icon i');
-                const isOpen = item.classList.contains('active');
+    function initFaqAccordions() {
+        const faqWrapper = document.querySelector('.faq-accordion-wrapper');
+        const faqItems = document.querySelectorAll('.faq-accordion-wrapper .accordion-item');
+        if (!faqWrapper || faqItems.length === 0) return;
 
-                if (isOpen) {
-                    item.classList.remove('active', 'open');
-                    if (icon) icon.classList.replace('fa-minus', 'fa-plus');
+        // Toggle a single FAQ item (expand or collapse)
+        function toggleAccordionItem(item, forceOpen) {
+            if (!item) return;
+            const isCurrentlyActive = item.classList.contains('active');
+            const willBeActive = (typeof forceOpen === 'boolean') ? forceOpen : !isCurrentlyActive;
+
+            if (willBeActive) {
+                item.classList.add('active', 'open');
+            } else {
+                item.classList.remove('active', 'open');
+            }
+
+            // Synchronize toggle icon immediately (+ <-> −)
+            const icon = item.querySelector('.toggle-icon i');
+            if (icon) {
+                if (willBeActive) {
+                    icon.classList.remove('fa-plus');
+                    icon.classList.add('fa-minus');
                 } else {
-                    item.classList.add('active', 'open');
-                    if (icon) icon.classList.replace('fa-plus', 'fa-minus');
+                    icon.classList.remove('fa-minus');
+                    icon.classList.add('fa-plus');
                 }
-            });
-        });
-    }
+            }
 
-    // FAQ Category Filter Pills
-    const faqPills = document.querySelectorAll('.faq-categories .faq-pill');
-    const faqItems = document.querySelectorAll('.faq-accordion-wrapper .accordion-item');
-    if (faqPills.length > 0 && faqItems.length > 0) {
-        faqPills.forEach(pill => {
-            pill.addEventListener('click', (e) => {
-                e.preventDefault();
-                faqPills.forEach(p => p.classList.remove('active'));
-                pill.classList.add('active');
-                const cat = pill.getAttribute('data-category');
-                faqItems.forEach(item => {
-                    const itemCat = item.getAttribute('data-category');
-                    if (cat === 'all' || itemCat === cat) {
-                        item.style.display = '';
-                    } else {
-                        item.style.display = 'none';
+            // Synchronize ARIA state for accessibility
+            const header = item.querySelector('.accordion-header');
+            const btn = item.querySelector('.toggle-icon');
+            const expandedVal = willBeActive ? 'true' : 'false';
+            if (header) header.setAttribute('aria-expanded', expandedVal);
+            if (btn) btn.setAttribute('aria-expanded', expandedVal);
+        }
+
+        // Initialize each FAQ item with proper accessible attributes and events
+        faqItems.forEach((item, index) => {
+            const header = item.querySelector('.accordion-header');
+            const btn = item.querySelector('.toggle-icon');
+            const body = item.querySelector('.accordion-body');
+            const bodyId = body ? (body.id || `faq-ans-${String(index + 1).padStart(2, '0')}`) : `faq-ans-${index + 1}`;
+
+            if (body && !body.id) {
+                body.id = bodyId;
+            }
+
+            const isActive = item.classList.contains('active');
+            if (header) {
+                header.setAttribute('role', 'button');
+                header.setAttribute('tabindex', '0');
+                header.setAttribute('aria-expanded', isActive ? 'true' : 'false');
+                header.setAttribute('aria-controls', bodyId);
+
+                // Click handler (covers entire header, question text, plus/minus button)
+                header.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    toggleAccordionItem(item);
+                });
+
+                // Keyboard activation (Enter / Space)
+                header.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        toggleAccordionItem(item);
                     }
                 });
-            });
-        });
-    }
+            }
 
-    // FAQ Live Keyword Search
-    const helpSearchForm = document.getElementById('helpSearchForm');
-    if (helpSearchForm && faqItems.length > 0) {
-        const searchInput = helpSearchForm.querySelector('input');
+            if (btn) {
+                btn.setAttribute('tabindex', '-1');
+                btn.setAttribute('aria-hidden', 'true');
+                btn.setAttribute('aria-expanded', isActive ? 'true' : 'false');
+                btn.setAttribute('aria-controls', bodyId);
+            }
+        });
+
+        // Global fallback toggle function in case invoked by legacy callers
+        window.toggleFaq = function (target) {
+            if (!target) return;
+            const item = target.closest ? target.closest('.accordion-item') : null;
+            if (item) {
+                toggleAccordionItem(item);
+            }
+        };
+
+        // FAQ Category Filter Pills
+        const faqPills = document.querySelectorAll('.faq-categories .faq-pill');
+        if (faqPills.length > 0) {
+            faqPills.forEach(pill => {
+                pill.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    faqPills.forEach(p => p.classList.remove('active'));
+                    pill.classList.add('active');
+                    const cat = pill.getAttribute('data-category');
+
+                    faqItems.forEach(item => {
+                        const itemCat = item.getAttribute('data-category');
+                        if (cat === 'all' || itemCat === cat) {
+                            item.style.display = '';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            });
+        }
+
+        // FAQ Live Keyword Search
+        const helpSearchForm = document.getElementById('helpSearchForm');
+        const searchInput = document.getElementById('faqSearchInput') || (helpSearchForm ? helpSearchForm.querySelector('input') : null);
+
         const runFaqSearch = (keyword) => {
-            const q = keyword.toLowerCase().trim();
+            const q = (keyword || '').toLowerCase().trim();
             faqItems.forEach(item => {
                 const text = item.textContent.toLowerCase();
                 if (!q || text.includes(q)) {
                     item.style.display = '';
+                    if (q) {
+                        toggleAccordionItem(item, true);
+                    }
                 } else {
                     item.style.display = 'none';
                 }
             });
         };
+        window.filterFaqs = runFaqSearch;
+
         if (searchInput) {
             searchInput.addEventListener('input', (e) => {
                 runFaqSearch(e.target.value);
             });
         }
-        helpSearchForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            if (searchInput) {
-                runFaqSearch(searchInput.value);
-            }
-            const wrapper = document.querySelector('.faq-accordion-wrapper');
-            if (wrapper) {
-                wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        });
-    }
 
-
-    /* ==========================================================================
-    6. POLICIES & TABLE OF CONTENTS (TOC) NAVIGATION LOGIC
-    ========================================================================== */
-    const tocLinks = document.querySelectorAll('.toc-menu a');
-    const articles = document.querySelectorAll('.policy-article');
-
-    if (tocLinks.length > 0 && articles.length > 0) {
-        // Smooth Scroll to Section on TOC Link Click
-        tocLinks.forEach(link => {
-            link.addEventListener('click', function(e) {
+        if (helpSearchForm) {
+            helpSearchForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                const targetId = this.getAttribute('href').substring(1);
-                const targetElement = document.getElementById(targetId);
-                
-                if (targetElement) {
-                    const y = targetElement.getBoundingClientRect().top + window.scrollY - 100;
-                    window.scrollTo({ top: y, behavior: 'smooth' });
+                if (searchInput) {
+                    runFaqSearch(searchInput.value);
                 }
+                faqWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
             });
-        });
-
-        // IntersectionObserver for TOC Active Scroll Highlighting
-        const articleObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    tocLinks.forEach(link => link.classList.remove('active'));
-                    const activeLink = document.querySelector(`.toc-menu a[href="#${entry.target.id}"]`);
-                    if (activeLink) activeLink.classList.add('active');
-                }
-            });
-        }, { root: null, rootMargin: '-120px 0px -60% 0px', threshold: 0 });
-
-        articles.forEach(article => articleObserver.observe(article));
+        }
     }
+
+    initFaqAccordions();
 
 
     /* ==========================================================================
-    8. UNIVERSAL AUTHENTICATION & FORM VALIDATION
+    6. UNIVERSAL AUTHENTICATION & FORM VALIDATION
     ========================================================================== */
 
     // A. Password Eye Icon Toggle

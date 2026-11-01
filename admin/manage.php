@@ -8,6 +8,9 @@ $statusFilter = $_GET['status'] ?? 'all';
 $catFilter = $_GET['cat'] ?? 'all';
 $branchFilter = isset($_GET['branch']) && $_GET['branch'] !== 'all' && $_GET['branch'] !== '' ? (int)$_GET['branch'] : 0;
 $q = trim($_GET['q'] ?? '');
+$vehicleId = isset($_GET['vehicle_id']) && (int)$_GET['vehicle_id'] > 0 
+    ? (int)$_GET['vehicle_id'] 
+    : (isset($_GET['id']) && (int)$_GET['id'] > 0 ? (int)$_GET['id'] : 0);
 $perPage = max(1, min(42, (int)($_GET['per_page'] ?? 6))); // Default 6 matching mockup
 
 // Branches list for filtering
@@ -32,8 +35,9 @@ if ($statusFilter === 'posted') {
 }
 
 if ($catFilter !== 'all' && $catFilter !== '') {
-    $where[] = "(LOWER(c.slug) = :cat OR LOWER(v.category) = :cat)";
-    $params['cat'] = strtolower($catFilter);
+    $where[] = "(LOWER(c.slug) = :cat1 OR LOWER(v.category) = :cat2)";
+    $params['cat1'] = strtolower($catFilter);
+    $params['cat2'] = strtolower($catFilter);
 }
 
 if ($branchFilter > 0) {
@@ -41,36 +45,54 @@ if ($branchFilter > 0) {
     $params['branch'] = $branchFilter;
 }
 
-if ($q !== '') {
-    $where[] = "(v.model LIKE :q OR v.brand LIKE :q OR v.make LIKE :q OR v.plate_number LIKE :q OR v.category LIKE :q)";
-    $params['q'] = '%' . $q . '%';
+if ($vehicleId > 0) {
+    $where[] = "v.id = :vid";
+    $params['vid'] = $vehicleId;
+} elseif ($q !== '') {
+    $where[] = "(v.model LIKE :q1 OR v.brand LIKE :q2 OR v.make LIKE :q3 OR v.plate_number LIKE :q4 OR v.category LIKE :q5)";
+    $likeQ = '%' . $q . '%';
+    $params['q1'] = $likeQ;
+    $params['q2'] = $likeQ;
+    $params['q3'] = $likeQ;
+    $params['q4'] = $likeQ;
+    $params['q5'] = $likeQ;
 }
 
 $whereSql = implode(' AND ', $where);
-$countStmt = $pdo->prepare("SELECT COUNT(*) FROM vehicles v LEFT JOIN categories c ON v.category_id=c.id WHERE $whereSql");
-$countStmt->execute($params);
-$totalVehicles = (int)$countStmt->fetchColumn();
 
-// Pagination calculation
-$totalPages = max(1, (int)ceil($totalVehicles / $perPage));
-$page = max(1, min($totalPages, (int)($_GET['page'] ?? 1)));
-$offset = ($page - 1) * $perPage;
+try {
+    $countStmt = $pdo->prepare("SELECT COUNT(*) FROM vehicles v LEFT JOIN categories c ON v.category_id=c.id WHERE $whereSql");
+    $countStmt->execute($params);
+    $totalVehicles = (int)$countStmt->fetchColumn();
 
-$sql = "SELECT v.*, c.name AS cat_name, b.name AS branch_name, b.city AS branch_city 
-        FROM vehicles v 
-        LEFT JOIN categories c ON v.category_id=c.id 
-        LEFT JOIN branches b ON v.branch_id=b.id
-        WHERE $whereSql 
-        ORDER BY v.id ASC 
-        LIMIT :limit OFFSET :offset";
-$stmt = $pdo->prepare($sql);
-foreach ($params as $k => $val) {
-    $stmt->bindValue(':' . $k, $val);
+    // Pagination calculation
+    $totalPages = max(1, (int)ceil($totalVehicles / $perPage));
+    $page = max(1, min($totalPages, (int)($_GET['page'] ?? 1)));
+    $offset = ($page - 1) * $perPage;
+
+    $sql = "SELECT v.*, c.name AS cat_name, b.name AS branch_name, b.city AS branch_city 
+            FROM vehicles v 
+            LEFT JOIN categories c ON v.category_id=c.id 
+            LEFT JOIN branches b ON v.branch_id=b.id
+            WHERE $whereSql 
+            ORDER BY v.id ASC 
+            LIMIT :limit OFFSET :offset";
+    $stmt = $pdo->prepare($sql);
+    foreach ($params as $k => $val) {
+        $stmt->bindValue(':' . $k, $val);
+    }
+    $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    $vehicles = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    error_log("DriveSphere Manage Vehicles Query Error: " . $e->getMessage());
+    $totalVehicles = 0;
+    $totalPages = 1;
+    $page = 1;
+    $offset = 0;
+    $vehicles = [];
 }
-$stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
-$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-$stmt->execute();
-$vehicles = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $start = $totalVehicles > 0 ? ($offset + 1) : 0;
 $end = min($offset + $perPage, $totalVehicles);
@@ -143,6 +165,15 @@ $end = min($offset + $perPage, $totalVehicles);
     <i class="fa-solid fa-plus" style="color: #ffffff !important;"></i> Add Vehicle
   </a>
 </div>
+
+<?php if ($vehicleId > 0 && !empty($vehicles)): ?>
+  <div style="background:#e0f2fe; border:1px solid #bae6fd; color:#0369a1; padding:10px 16px; border-radius:10px; font-size:12.5px; font-weight:600; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+    <span><i class="fa-solid fa-filter" style="color:#0284c7;"></i> Showing selected vehicle: <strong><?= e(($vehicles[0]['brand'] ?: $vehicles[0]['make']) . ' ' . $vehicles[0]['model']) ?></strong> (ID #<?= $vehicleId ?> &bull; Plate <?= e($vehicles[0]['plate_number']) ?>)</span>
+    <a href="manage.php" style="color:#0284c7; text-decoration:none; font-weight:700; background:#fff; border:1px solid #bae6fd; padding:3px 10px; border-radius:6px; font-size:11.5px; display:inline-flex; align-items:center; gap:4px;">
+      <i class="fa-solid fa-xmark"></i> Clear Filter &amp; View All
+    </a>
+  </div>
+<?php endif; ?>
 
 <!-- 3. Vehicles Grid (2 rows x 3 columns matching image) -->
 <div class="manage-v-grid" id="manageFleetGrid">
@@ -441,6 +472,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const url = new URL(window.location.href);
                 url.searchParams.set('q', qVal);
                 url.searchParams.set('page', '1');
+                url.searchParams.delete('vehicle_id');
+                url.searchParams.delete('id');
                 window.location.href = url.toString();
             }
         });

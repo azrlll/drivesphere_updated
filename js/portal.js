@@ -29,7 +29,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Mobile menu
   var burger = document.getElementById('burger'), links = document.getElementById('navLinks');
-  if (burger && links) burger.addEventListener('click', function () { links.classList.toggle('open'); });
+  if (burger && links) {
+    burger.addEventListener('click', function () {
+      var isOpen = links.classList.toggle('open');
+      burger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+  }
 
   // Modals: <button data-open="id"> ... <button data-close>
   document.querySelectorAll('[data-open]').forEach(function (b) {
@@ -374,4 +379,146 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   }
+
+  /* ==========================================================================
+  HELP & FAQ ACCORDION CONTROLLER (PORTAL)
+  ========================================================================== */
+  function initPortalFaqAccordions() {
+    var faqWrapper = document.querySelector('.faq-accordion-wrapper');
+    var faqItems = document.querySelectorAll('.faq-accordion-wrapper .accordion-item');
+    if (!faqWrapper || faqItems.length === 0) return;
+
+    function toggleAccordionItem(item, forceOpen) {
+      if (!item) return;
+      var isCurrentlyActive = item.classList.contains('active');
+      var willBeActive = (typeof forceOpen === 'boolean') ? forceOpen : !isCurrentlyActive;
+
+      if (willBeActive) {
+        item.classList.add('active', 'open');
+      } else {
+        item.classList.remove('active', 'open');
+      }
+
+      var icon = item.querySelector('.toggle-icon i');
+      if (icon) {
+        if (willBeActive) {
+          icon.classList.remove('fa-plus');
+          icon.classList.add('fa-minus');
+        } else {
+          icon.classList.remove('fa-minus');
+          icon.classList.add('fa-plus');
+        }
+      }
+
+      var header = item.querySelector('.accordion-header');
+      var btn = item.querySelector('.toggle-icon');
+      var expandedVal = willBeActive ? 'true' : 'false';
+      if (header) header.setAttribute('aria-expanded', expandedVal);
+      if (btn) btn.setAttribute('aria-expanded', expandedVal);
+    }
+
+    faqItems.forEach(function (item, index) {
+      var header = item.querySelector('.accordion-header');
+      var btn = item.querySelector('.toggle-icon');
+      var body = item.querySelector('.accordion-body');
+      var bodyId = body ? (body.id || ('faq-ans-' + String(index + 1).padStart(2, '0'))) : ('faq-ans-' + (index + 1));
+
+      if (body && !body.id) {
+        body.id = bodyId;
+      }
+
+      var isActive = item.classList.contains('active');
+      if (header) {
+        header.setAttribute('role', 'button');
+        header.setAttribute('tabindex', '0');
+        header.setAttribute('aria-expanded', isActive ? 'true' : 'false');
+        header.setAttribute('aria-controls', bodyId);
+
+        header.addEventListener('click', function (e) {
+          e.preventDefault();
+          toggleAccordionItem(item);
+        });
+
+        header.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleAccordionItem(item);
+          }
+        });
+      }
+
+      if (btn) {
+        btn.setAttribute('tabindex', '-1');
+        btn.setAttribute('aria-hidden', 'true');
+        btn.setAttribute('aria-expanded', isActive ? 'true' : 'false');
+        btn.setAttribute('aria-controls', bodyId);
+      }
+    });
+
+    window.toggleFaq = function (target) {
+      if (!target) return;
+      var item = target.closest ? target.closest('.accordion-item') : null;
+      if (item) {
+        toggleAccordionItem(item);
+      }
+    };
+
+    var faqPills = document.querySelectorAll('.faq-categories .faq-pill');
+    if (faqPills.length > 0) {
+      faqPills.forEach(function (pill) {
+        pill.addEventListener('click', function (e) {
+          e.preventDefault();
+          faqPills.forEach(function (p) { p.classList.remove('active'); });
+          pill.classList.add('active');
+          var cat = pill.getAttribute('data-category');
+
+          faqItems.forEach(function (item) {
+            var itemCat = item.getAttribute('data-category');
+            if (cat === 'all' || itemCat === cat) {
+              item.style.display = '';
+            } else {
+              item.style.display = 'none';
+            }
+          });
+        });
+      });
+    }
+
+    var helpSearchForm = document.getElementById('helpSearchForm');
+    var searchInput = document.getElementById('faqSearchInput') || (helpSearchForm ? helpSearchForm.querySelector('input') : null);
+
+    var runFaqSearch = function (keyword) {
+      var q = (keyword || '').toLowerCase().trim();
+      faqItems.forEach(function (item) {
+        var text = item.textContent.toLowerCase();
+        if (!q || text.includes(q)) {
+          item.style.display = '';
+          if (q) {
+            toggleAccordionItem(item, true);
+          }
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    };
+    window.filterFaqs = runFaqSearch;
+
+    if (searchInput) {
+      searchInput.addEventListener('input', function (e) {
+        runFaqSearch(e.target.value);
+      });
+    }
+
+    if (helpSearchForm) {
+      helpSearchForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (searchInput) {
+          runFaqSearch(searchInput.value);
+        }
+        faqWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+  }
+
+  initPortalFaqAccordions();
 });
