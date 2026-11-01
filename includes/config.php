@@ -37,25 +37,38 @@ $isLocalEnv = empty($_SERVER['HTTP_HOST'])
 
 if (!$isLocalEnv) {
     // 1. Production Hosting (InfinityFree / drivesphere.free.nf):
-    //    Loads live database credentials from untracked config.production.php
-    if (file_exists(__DIR__ . '/config.production.php')) {
-        require_once __DIR__ . '/config.production.php';
-    } elseif (file_exists(__DIR__ . '/config.local.php')) {
-        require_once __DIR__ . '/config.local.php';
+    //    Check both includes/ and root htdocs/ for config.production.php or config.local.php
+    $prodCandidates = [
+        __DIR__ . '/config.production.php',
+        dirname(__DIR__) . '/config.production.php',
+        __DIR__ . '/config.local.php',
+        dirname(__DIR__) . '/config.local.php',
+    ];
+    foreach ($prodCandidates as $cfgFile) {
+        if (file_exists($cfgFile)) {
+            require_once $cfgFile;
+            break;
+        }
     }
+
+    // Default production host, db, and user for InfinityFree (if not defined in config.production.php)
+    // Note: The password MUST be supplied via config.production.php on InfinityFree.
+    if (!defined('DB_HOST')) define('DB_HOST', getenv('DB_HOST') ?: 'sql112.infinityfree.com');
+    if (!defined('DB_NAME')) define('DB_NAME', getenv('DB_NAME') ?: 'if0_43311944_drivesphere');
+    if (!defined('DB_USER')) define('DB_USER', getenv('DB_USER') ?: 'if0_43311944');
+    if (!defined('DB_PASS')) define('DB_PASS', getenv('DB_PASS') !== false ? getenv('DB_PASS') : '');
 } else {
-    // 2. Local Development (XAMPP): optional custom local override
+    // 2. Local Development (XAMPP):
+    //    Optional local override:
     if (file_exists(__DIR__ . '/config.local.php')) {
         require_once __DIR__ . '/config.local.php';
     }
+    // Safe XAMPP Defaults
+    if (!defined('DB_HOST')) define('DB_HOST', getenv('DB_HOST') ?: '127.0.0.1');
+    if (!defined('DB_NAME')) define('DB_NAME', getenv('DB_NAME') ?: 'drivesphere');
+    if (!defined('DB_USER')) define('DB_USER', getenv('DB_USER') ?: 'root');
+    if (!defined('DB_PASS')) define('DB_PASS', getenv('DB_PASS') !== false ? getenv('DB_PASS') : '');
 }
-
-// 3. Fallback to Safe Defaults (Local XAMPP Development)
-// Real production credentials should NEVER be committed to Git.
-if (!defined('DB_HOST')) define('DB_HOST', getenv('DB_HOST') ?: '127.0.0.1');
-if (!defined('DB_NAME')) define('DB_NAME', getenv('DB_NAME') ?: 'drivesphere');
-if (!defined('DB_USER')) define('DB_USER', getenv('DB_USER') ?: 'root');
-if (!defined('DB_PASS')) define('DB_PASS', getenv('DB_PASS') !== false ? getenv('DB_PASS') : '');
 
 // Dynamically detect BASE_URL so links, assets, and redirects work under any folder name (drivesphere_updated, drivesphere, etc.) and host/port
 if (!defined('BASE_URL')) {
